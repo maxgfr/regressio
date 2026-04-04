@@ -1,6 +1,6 @@
 {
   "name": "regressio",
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "description": "Zero-dependency TypeScript regression & statistics library: OLS, Ridge, Lasso, Elastic Net, WLS, Robust, Polynomial, and Logistic regression with full statistical outputs, diagnostics, and preprocessing",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -52,7 +52,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxgfr/regressio.git"
+    "url": "git+https://github.com/maxgfr/regressio.git"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
