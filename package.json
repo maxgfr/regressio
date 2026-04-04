@@ -1,0 +1,64 @@
+{
+  "name": "regressio",
+  "version": "0.0.0-development",
+  "description": "Zero-dependency TypeScript regression & statistics library: OLS, Ridge, Lasso, Elastic Net, WLS, Robust, Polynomial, and Logistic regression with full statistical outputs, diagnostics, and preprocessing",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "pkg"
+  ],
+  "scripts": {
+    "build:ts": "bunup src/index.ts --format esm,cjs --dts",
+    "build": "bun run build:ts",
+    "test": "bun test",
+    "lint": "biome check src tests",
+    "lint:fix": "biome check --write src tests",
+    "check": "bun run lint && bun run test",
+    "release": "semantic-release"
+  },
+  "keywords": [
+    "regression",
+    "linear-regression",
+    "ols",
+    "ridge",
+    "lasso",
+    "elastic-net",
+    "logistic-regression",
+    "polynomial-regression",
+    "weighted-least-squares",
+    "robust-regression",
+    "statistics",
+    "machine-learning",
+    "typescript",
+    "zero-dependencies",
+    "diagnostics",
+    "preprocessing"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.10",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@types/bun": "latest",
+    "bunup": "^0.16.31",
+    "semantic-release": "^25.0.3",
+    "typescript": "^5.9.3"
+  }
+}

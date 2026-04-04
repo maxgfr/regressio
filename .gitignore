@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+pkg/
+target/
+*.tgz
+
+# coverage
+coverage/
+*.lcov
+
+# env
+.env
+.env.local
+.env.*.local
+
+# caches
+.cache
+*.tsbuildinfo
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
