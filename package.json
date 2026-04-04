@@ -50,6 +50,10 @@
     "preprocessing"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxgfr/regressio.git"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
     "@semantic-release/commit-analyzer": "^13.0.1",
