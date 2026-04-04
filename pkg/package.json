@@ -1,0 +1,17 @@
+{
+  "name": "regressio-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "regressio_wasm_bg.wasm",
+    "regressio_wasm.js",
+    "regressio_wasm_bg.js",
+    "regressio_wasm.d.ts"
+  ],
+  "main": "regressio_wasm.js",
+  "types": "regressio_wasm.d.ts",
+  "sideEffects": [
+    "./regressio_wasm.js",
+    "./snippets/*"
+  ]
+}

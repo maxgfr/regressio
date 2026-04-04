@@ -1,3 +1,4 @@
+import { engineSoftmaxRows } from "../core/engine";
 import { Matrix } from "../core/matrix";
 import type { DataInput, DataMatrix, DataVector } from "../types";
 
@@ -107,12 +108,18 @@ export class MulticlassLogisticRegression {
     for (let iter = 0; iter < this._maxIterations; iter++) {
       // Compute probabilities: P = softmax(X * W), shape (n x K)
       const scores = XMat.multiply(this._weights); // (n x K)
-      const P = Matrix.zeros(n, K);
-      for (let i = 0; i < n; i++) {
-        const logits: number[] = [];
-        for (let c = 0; c < K; c++) logits.push(scores.get(i, c));
-        const probs = this.softmax(logits);
-        for (let c = 0; c < K; c++) P.set(i, c, probs[c]!);
+      const wasmP = engineSoftmaxRows(scores.data, n, K);
+      let P: Matrix;
+      if (wasmP) {
+        P = new Matrix(n, K, wasmP);
+      } else {
+        P = Matrix.zeros(n, K);
+        for (let i = 0; i < n; i++) {
+          const logits: number[] = [];
+          for (let c = 0; c < K; c++) logits.push(scores.get(i, c));
+          const probs = this.softmax(logits);
+          for (let c = 0; c < K; c++) P.set(i, c, probs[c]!);
+        }
       }
 
       // Gradient: X^T (P - Y) / n

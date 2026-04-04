@@ -1,3 +1,4 @@
+import { engineCoordinateDescent } from "../core/engine";
 import type { DataInput, DataMatrix, DataVector, LassoOptions } from "../types";
 import { BaseRegression } from "./base";
 
@@ -23,15 +24,36 @@ export class LassoRegression extends BaseRegression {
     const n = Xmat.length;
     const p = Xmat[0]!.length;
 
-    // Standardize features
+    // WASM fast path — full coordinate descent in Rust
+    const xFlat = new Float64Array(n * p);
+    for (let i = 0; i < n; i++) for (let j = 0; j < p; j++) xFlat[i * p + j] = Xmat[i]![j]!;
+
+    const wasmResult = engineCoordinateDescent(
+      xFlat,
+      new Float64Array(y),
+      this._alpha,
+      this.getL1Ratio(),
+      this._maxIterations,
+      this._tolerance,
+      n,
+      p,
+      this._fitIntercept,
+    );
+    if (wasmResult) {
+      this._intercept = wasmResult[0]!;
+      this._coefficients = Array.from(wasmResult.slice(1));
+      this._yHat = this.predict(Xmat);
+      this._fitted = true;
+      return this;
+    }
+
+    // TypeScript fallback
     const { Xstd, xMeans, xStds, yMean } = this.standardize(Xmat, y);
     const yCentered = y.map((yi) => yi - yMean);
 
-    // Initialize
     const beta = new Float64Array(p);
     const residual = new Float64Array(yCentered);
 
-    // Precompute column norms squared
     const colNormsSq = new Float64Array(p);
     for (let j = 0; j < p; j++) {
       let sum = 0;
@@ -41,23 +63,19 @@ export class LassoRegression extends BaseRegression {
       colNormsSq[j] = sum;
     }
 
-    // Coordinate descent
     for (let iter = 0; iter < this._maxIterations; iter++) {
       let maxChange = 0;
 
       for (let j = 0; j < p; j++) {
         const oldBeta = beta[j]!;
 
-        // rho_j = X_j^T (residual + beta_j * X_j)
         let rho = 0;
         for (let i = 0; i < n; i++) {
           rho += Xstd[i]![j]! * (residual[i]! + oldBeta * Xstd[i]![j]!);
         }
 
-        // Soft-thresholding + denominator modification for subclasses
         beta[j] = this.coordinateUpdate(rho, colNormsSq[j]!, n, j);
 
-        // Update residual
         const change = beta[j]! - oldBeta;
         if (change !== 0) {
           for (let i = 0; i < n; i++) {
@@ -71,7 +89,6 @@ export class LassoRegression extends BaseRegression {
       if (maxChange < this._tolerance) break;
     }
 
-    // Un-standardize
     this._coefficients = Array.from(beta).map((bj, j) => {
       const std = xStds[j]!;
       return std > 1e-15 ? bj / std : 0;
@@ -83,6 +100,10 @@ export class LassoRegression extends BaseRegression {
     this._yHat = this.predict(Xmat);
     this._fitted = true;
     return this;
+  }
+
+  protected getL1Ratio(): number {
+    return 1.0;
   }
 
   predict(X: DataInput): DataVector {

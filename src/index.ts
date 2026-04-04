@@ -1,13 +1,6 @@
 // Models
 
-export type { ComputeEngine, WasmModule } from "./core/engine";
-export {
-  getEngine,
-  isWasmActive,
-  useTypescriptEngine,
-  useWasmEngine,
-  useWasmModule,
-} from "./core/engine";
+export { isWasmActive } from "./core/engine";
 // Core (for advanced users)
 export { Matrix } from "./core/matrix";
 export { conditionNumber, correlationMatrix, vif } from "./diagnostics/multicollinearity";

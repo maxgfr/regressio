@@ -14,6 +14,10 @@ export class ElasticNet extends LassoRegression {
     this._l1Ratio = options.l1Ratio ?? 0.5;
   }
 
+  protected override getL1Ratio(): number {
+    return this._l1Ratio;
+  }
+
   protected override coordinateUpdate(
     rho: number,
     colNormSq: number,

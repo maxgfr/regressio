@@ -18,7 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - run: bun install
+      - run: bun run build:wasm
       - run: bun run lint
       - run: bun test
 
@@ -36,7 +40,11 @@ jobs:
           node-version: lts/*
           registry-url: https://registry.npmjs.org
       - uses: oven-sh/setup-bun@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - run: bun install
+      - run: bun run build:wasm
       - run: bun run build
       - run: bun run release
         env:

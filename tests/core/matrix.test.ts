@@ -225,6 +225,22 @@ describe("Matrix", () => {
       ]);
     });
 
+    test("subtractInPlace modifies receiver", () => {
+      const a = Matrix.fromArray([
+        [5, 6],
+        [7, 8],
+      ]);
+      const b = Matrix.fromArray([
+        [1, 2],
+        [3, 4],
+      ]);
+      a.subtractInPlace(b);
+      expect(a.toArray()).toEqual([
+        [4, 4],
+        [4, 4],
+      ]);
+    });
+
     test("scaleInPlace modifies receiver", () => {
       const a = Matrix.fromArray([[2, 4]]);
       a.scaleInPlace(0.5);

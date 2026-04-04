@@ -297,27 +297,34 @@ console.log(C.trace());        // 5
 console.log(C.transpose().toArray());
 ```
 
-## WASM Engine (Optional)
+## WASM Acceleration
 
-For faster matrix operations on large datasets, build and load the Rust/WASM engine. When active, `Matrix.multiply()`, QR decomposition, Cholesky decomposition, and back-substitution are dispatched to compiled Rust code.
+regressio ships with a pre-compiled Rust/WASM engine that activates automatically — no configuration needed. When the WASM binary is available, heavy computations are dispatched to compiled Rust code for significantly faster execution.
 
-```bash
-cd rust && wasm-pack build --target bundler --out-dir ../pkg
-```
+**Accelerated operations:**
+- Matrix: multiply, transpose, add, subtract, scale, dot product, norm, determinant
+- Decompositions: QR, Cholesky, SVD, eigenvalues
+- Solvers: forward/back substitution
+- Models: Lasso/Elastic Net coordinate descent, softmax, KNN distance matrices
+
+If WASM is unavailable (e.g. unsupported runtime), all operations fall back silently to pure TypeScript.
 
 ```typescript
-import { useWasmEngine, useTypescriptEngine, isWasmActive, getEngine } from 'regressio';
+import { isWasmActive } from 'regressio';
 
-// Load WASM engine (async, loads the .wasm file)
-await useWasmEngine();
-console.log(isWasmActive()); // true
+console.log(isWasmActive()); // true if WASM loaded
 
-// All subsequent matrix operations use WASM
+// Everything just works — WASM is used transparently
 const model = new LinearRegression();
 model.fit(X, y); // QR decomposition runs in Rust
+```
 
-// Switch back to pure TypeScript
-useTypescriptEngine();
+### Rebuilding WASM
+
+The pre-built WASM binary is included in the package. To rebuild from Rust source (requires [Rust](https://rustup.rs/) with `wasm32-unknown-unknown` target):
+
+```bash
+bun run build:wasm
 ```
 
 ## License

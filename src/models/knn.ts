@@ -1,3 +1,4 @@
+import { engineEuclideanDistances, engineManhattanDistances } from "../core/engine";
 import type { DataInput, DataMatrix, DataVector } from "../types";
 
 export interface KNNOptions {
@@ -44,6 +45,36 @@ export class KNearestNeighbors {
   predict(X: DataInput): DataVector {
     if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
     const Xmat = this.normalizeInput(X);
+
+    // WASM batch path — compute all distances at once
+    const dim = this._X[0]!.length;
+    const nTrain = this._X.length;
+    const nTest = Xmat.length;
+
+    const trainFlat = new Float64Array(nTrain * dim);
+    for (let i = 0; i < nTrain; i++)
+      for (let j = 0; j < dim; j++) trainFlat[i * dim + j] = this._X[i]![j]!;
+
+    const testFlat = new Float64Array(nTest * dim);
+    for (let i = 0; i < nTest; i++)
+      for (let j = 0; j < dim; j++) testFlat[i * dim + j] = Xmat[i]![j]!;
+
+    const distMatrix =
+      this._distance === "manhattan"
+        ? engineManhattanDistances(trainFlat, testFlat, nTrain, nTest, dim)
+        : engineEuclideanDistances(trainFlat, testFlat, nTrain, nTest, dim);
+
+    if (distMatrix) {
+      return Array.from({ length: nTest }, (_, i) => {
+        // Find k nearest from this row of the distance matrix
+        const indices = Array.from({ length: nTrain }, (_, j) => j)
+          .sort((a, b) => distMatrix[i * nTrain + a]! - distMatrix[i * nTrain + b]!)
+          .slice(0, this._k);
+        return this.voteOrMean(indices);
+      });
+    }
+
+    // TypeScript fallback
     return Xmat.map((row) => this.predictOne(row));
   }
 
@@ -53,23 +84,17 @@ export class KNearestNeighbors {
     return this.findNeighbors(point).map((n) => n.index);
   }
 
-  private predictOne(point: number[]): number {
-    const nearest = this.findNeighbors(point);
-
+  private voteOrMean(indices: number[]): number {
     if (this._mode === "regression") {
-      // Mean of neighbor values
       let sum = 0;
-      for (const n of nearest) sum += this._y[n.index]!;
-      return sum / nearest.length;
+      for (const idx of indices) sum += this._y[idx]!;
+      return sum / indices.length;
     }
-
-    // Classification: majority vote
     const votes = new Map<number, number>();
-    for (const n of nearest) {
-      const label = this._y[n.index]!;
+    for (const idx of indices) {
+      const label = this._y[idx]!;
       votes.set(label, (votes.get(label) ?? 0) + 1);
     }
-
     let bestLabel = 0;
     let bestCount = 0;
     for (const [label, count] of votes) {
@@ -79,6 +104,11 @@ export class KNearestNeighbors {
       }
     }
     return bestLabel;
+  }
+
+  private predictOne(point: number[]): number {
+    const nearest = this.findNeighbors(point);
+    return this.voteOrMean(nearest.map((n) => n.index));
   }
 
   private findNeighbors(point: number[]): { index: number; distance: number }[] {

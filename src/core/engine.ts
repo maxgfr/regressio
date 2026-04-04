@@ -1,12 +1,14 @@
 /**
  * Computation engine abstraction.
- * Default: pure TypeScript. Call useWasmEngine() to switch to WASM backend.
+ * WASM is auto-loaded at module init when available (silent fallback to TypeScript).
  *
- * The WASM engine accelerates: matrix multiply, QR decomposition, Cholesky, back-substitution.
- * All other operations remain in TypeScript.
+ * Accelerated operations: matrix multiply/transpose/add/subtract/scale/dot/norm/determinant,
+ * QR/Cholesky/SVD/eigenvalues, forward/back substitution, coordinate descent (Lasso/ElasticNet),
+ * softmax, KNN distance matrices.
  */
 
-export interface WasmModule {
+interface WasmModule {
+  // Linear algebra
   matrix_multiply(
     a: Float64Array,
     a_rows: number,
@@ -15,61 +17,76 @@ export interface WasmModule {
     b_rows: number,
     b_cols: number,
   ): Float64Array;
+  matrix_transpose(data: Float64Array, rows: number, cols: number): Float64Array;
+  matrix_add(a: Float64Array, b: Float64Array): Float64Array;
+  matrix_subtract(a: Float64Array, b: Float64Array): Float64Array;
+  matrix_scale(a: Float64Array, scalar: number): Float64Array;
+  vector_dot(a: Float64Array, b: Float64Array): number;
+  frobenius_norm(a: Float64Array): number;
+  determinant(data: Float64Array, n: number): number;
+  // Decompositions
   qr_decompose(data: Float64Array, rows: number, cols: number): Float64Array;
   cholesky(data: Float64Array, n: number): Float64Array;
   solve_triangular(r: Float64Array, b: Float64Array, n: number): Float64Array;
+  forward_substitution(l: Float64Array, b: Float64Array, n: number): Float64Array;
+  svd(data: Float64Array, rows: number, cols: number): Float64Array;
+  eigenvalues(data: Float64Array, n: number): Float64Array;
+  // Model algorithms
+  coordinate_descent(
+    x: Float64Array,
+    y: Float64Array,
+    alpha: number,
+    l1_ratio: number,
+    max_iter: number,
+    tolerance: number,
+    n: number,
+    p: number,
+    fit_intercept: boolean,
+  ): Float64Array;
+  softmax_rows(data: Float64Array, rows: number, cols: number): Float64Array;
+  euclidean_distances(
+    train: Float64Array,
+    test: Float64Array,
+    n_train: number,
+    n_test: number,
+    dim: number,
+  ): Float64Array;
+  manhattan_distances(
+    train: Float64Array,
+    test: Float64Array,
+    n_train: number,
+    n_test: number,
+    dim: number,
+  ): Float64Array;
 }
 
-export interface ComputeEngine {
+interface ComputeEngine {
   name: "typescript" | "wasm";
   wasm?: WasmModule;
 }
 
 let currentEngine: ComputeEngine = { name: "typescript" };
 
-/** Get the current computation engine. */
-export function getEngine(): ComputeEngine {
-  return currentEngine;
-}
+// Auto-init: silently try to load WASM at module load time.
+import("#wasm-engine")
+  .then((wasm: unknown) => {
+    if (currentEngine.name === "typescript") {
+      currentEngine = { name: "wasm", wasm: wasm as WasmModule };
+    }
+  })
+  .catch(() => {
+    // WASM not available — stay on TypeScript silently
+  });
 
 /** Check if the WASM engine is active. */
 export function isWasmActive(): boolean {
   return currentEngine.name === "wasm" && currentEngine.wasm != null;
 }
 
-/**
- * Switch to the WASM computation engine for faster matrix operations.
- * Requires the regressio WASM package to be built:
- *   cd rust && wasm-pack build --target bundler --out-dir ../pkg
- */
-export async function useWasmEngine(): Promise<void> {
-  try {
-    const wasm = await import("../../pkg");
-    currentEngine = { name: "wasm", wasm: wasm as unknown as WasmModule };
-  } catch {
-    throw new Error(
-      "WASM engine not available. Build it with: cd rust && wasm-pack build --target bundler --out-dir ../pkg",
-    );
-  }
-}
+// ===========================================================================
+// Dispatch — Linear Algebra
+// ===========================================================================
 
-/**
- * Load WASM engine from a pre-loaded module (useful for custom bundler setups).
- */
-export function useWasmModule(wasmModule: WasmModule): void {
-  currentEngine = { name: "wasm", wasm: wasmModule };
-}
-
-/** Reset to the default TypeScript engine. */
-export function useTypescriptEngine(): void {
-  currentEngine = { name: "typescript" };
-}
-
-// ---------------------------------------------------------------------------
-// Engine-dispatched operations (used by Matrix and decompositions)
-// ---------------------------------------------------------------------------
-
-/** Matrix multiply: dispatches to WASM if available, else TypeScript. */
 export function engineMatrixMultiply(
   a: Float64Array,
   aRows: number,
@@ -81,7 +98,6 @@ export function engineMatrixMultiply(
   if (currentEngine.wasm) {
     return currentEngine.wasm.matrix_multiply(a, aRows, aCols, b, bRows, bCols);
   }
-  // TypeScript fallback (ikj loop)
   const result = new Float64Array(aRows * bCols);
   for (let i = 0; i < aRows; i++) {
     for (let k = 0; k < aCols; k++) {
@@ -94,39 +110,172 @@ export function engineMatrixMultiply(
   return result;
 }
 
-/** QR decomposition: dispatches to WASM if available. Returns { Q, R } as flat arrays. */
+export function engineTranspose(
+  data: Float64Array,
+  rows: number,
+  cols: number,
+): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.matrix_transpose(data, rows, cols);
+  return null;
+}
+
+export function engineAdd(a: Float64Array, b: Float64Array): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.matrix_add(a, b);
+  return null;
+}
+
+export function engineSubtract(a: Float64Array, b: Float64Array): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.matrix_subtract(a, b);
+  return null;
+}
+
+export function engineScale(a: Float64Array, scalar: number): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.matrix_scale(a, scalar);
+  return null;
+}
+
+export function engineDot(a: Float64Array, b: Float64Array): number | null {
+  if (currentEngine.wasm) return currentEngine.wasm.vector_dot(a, b);
+  return null;
+}
+
+export function engineNorm(a: Float64Array): number | null {
+  if (currentEngine.wasm) return currentEngine.wasm.frobenius_norm(a);
+  return null;
+}
+
+export function engineDeterminant(data: Float64Array, n: number): number | null {
+  if (currentEngine.wasm) return currentEngine.wasm.determinant(data, n);
+  return null;
+}
+
+// ===========================================================================
+// Dispatch — Decompositions
+// ===========================================================================
+
 export function engineQR(
   data: Float64Array,
   rows: number,
   cols: number,
-): { Q: Float64Array; R: Float64Array } {
+): { Q: Float64Array; R: Float64Array } | null {
   if (currentEngine.wasm) {
     const result = currentEngine.wasm.qr_decompose(data, rows, cols);
     const qSize = rows * rows;
-    const Q = result.slice(0, qSize);
-    const R = result.slice(qSize);
-    return { Q, R };
-  }
-  // Return null to signal "use TypeScript implementation"
-  return null as unknown as { Q: Float64Array; R: Float64Array };
-}
-
-/** Cholesky: dispatches to WASM if available. Returns L as flat array, or null. */
-export function engineCholesky(data: Float64Array, n: number): Float64Array | null {
-  if (currentEngine.wasm) {
-    return currentEngine.wasm.cholesky(data, n);
+    return { Q: result.slice(0, qSize), R: result.slice(qSize) };
   }
   return null;
 }
 
-/** Back-substitution: dispatches to WASM if available. */
+export function engineCholesky(data: Float64Array, n: number): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.cholesky(data, n);
+  return null;
+}
+
 export function engineSolveTriangular(
   r: Float64Array,
   b: Float64Array,
   n: number,
 ): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.solve_triangular(r, b, n);
+  return null;
+}
+
+export function engineForwardSubstitution(
+  l: Float64Array,
+  b: Float64Array,
+  n: number,
+): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.forward_substitution(l, b, n);
+  return null;
+}
+
+export function engineSVD(
+  data: Float64Array,
+  rows: number,
+  cols: number,
+): { U: Float64Array; S: Float64Array; V: Float64Array } | null {
   if (currentEngine.wasm) {
-    return currentEngine.wasm.solve_triangular(r, b, n);
+    const k = Math.min(rows, cols);
+    const result = currentEngine.wasm.svd(data, rows, cols);
+    const uSize = rows * k;
+    return {
+      U: result.slice(0, uSize),
+      S: result.slice(uSize, uSize + k),
+      V: result.slice(uSize + k),
+    };
   }
+  return null;
+}
+
+export function engineEigenvalues(data: Float64Array, n: number): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.eigenvalues(data, n);
+  return null;
+}
+
+// ===========================================================================
+// Dispatch — Model algorithms
+// ===========================================================================
+
+/** Coordinate descent for Lasso/ElasticNet. Returns [intercept, ...coefficients] or null. */
+export function engineCoordinateDescent(
+  x: Float64Array,
+  y: Float64Array,
+  alpha: number,
+  l1Ratio: number,
+  maxIter: number,
+  tolerance: number,
+  n: number,
+  p: number,
+  fitIntercept: boolean,
+): Float64Array | null {
+  if (currentEngine.wasm) {
+    return currentEngine.wasm.coordinate_descent(
+      x,
+      y,
+      alpha,
+      l1Ratio,
+      maxIter,
+      tolerance,
+      n,
+      p,
+      fitIntercept,
+    );
+  }
+  return null;
+}
+
+/** Row-wise softmax. Returns flat probability matrix or null. */
+export function engineSoftmaxRows(
+  data: Float64Array,
+  rows: number,
+  cols: number,
+): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.softmax_rows(data, rows, cols);
+  return null;
+}
+
+/** Euclidean distance matrix. Returns flat n_test × n_train or null. */
+export function engineEuclideanDistances(
+  train: Float64Array,
+  test: Float64Array,
+  nTrain: number,
+  nTest: number,
+  dim: number,
+): Float64Array | null {
+  if (currentEngine.wasm)
+    return currentEngine.wasm.euclidean_distances(train, test, nTrain, nTest, dim);
+  return null;
+}
+
+/** Manhattan distance matrix. Returns flat n_test × n_train or null. */
+export function engineManhattanDistances(
+  train: Float64Array,
+  test: Float64Array,
+  nTrain: number,
+  nTest: number,
+  dim: number,
+): Float64Array | null {
+  if (currentEngine.wasm)
+    return currentEngine.wasm.manhattan_distances(train, test, nTrain, nTest, dim);
   return null;
 }

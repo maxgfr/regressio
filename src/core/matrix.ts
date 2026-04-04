@@ -1,4 +1,13 @@
-import { engineMatrixMultiply } from "./engine";
+import {
+  engineAdd,
+  engineDeterminant,
+  engineDot,
+  engineMatrixMultiply,
+  engineNorm,
+  engineScale,
+  engineSubtract,
+  engineTranspose,
+} from "./engine";
 
 /**
  * Matrix class backed by a flat Float64Array in row-major order.
@@ -111,6 +120,10 @@ export class Matrix {
   // -------------------------------------------------------------------------
 
   transpose(): Matrix {
+    const wasmResult = engineTranspose(this.data, this.rows, this.cols);
+    if (wasmResult) {
+      return new Matrix(this.cols, this.rows, wasmResult);
+    }
     const result = new Matrix(this.cols, this.rows);
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
@@ -140,6 +153,8 @@ export class Matrix {
 
   add(other: Matrix): Matrix {
     this.assertSameDimensions(other, "add");
+    const w = engineAdd(this.data, other.data);
+    if (w) return new Matrix(this.rows, this.cols, w);
     const result = new Matrix(this.rows, this.cols);
     for (let i = 0; i < this.data.length; i++) {
       result.data[i] = this.data[i]! + other.data[i]!;
@@ -149,6 +164,8 @@ export class Matrix {
 
   subtract(other: Matrix): Matrix {
     this.assertSameDimensions(other, "subtract");
+    const w = engineSubtract(this.data, other.data);
+    if (w) return new Matrix(this.rows, this.cols, w);
     const result = new Matrix(this.rows, this.cols);
     for (let i = 0; i < this.data.length; i++) {
       result.data[i] = this.data[i]! - other.data[i]!;
@@ -157,6 +174,8 @@ export class Matrix {
   }
 
   scale(scalar: number): Matrix {
+    const w = engineScale(this.data, scalar);
+    if (w) return new Matrix(this.rows, this.cols, w);
     const result = new Matrix(this.rows, this.cols);
     for (let i = 0; i < this.data.length; i++) {
       result.data[i] = this.data[i]! * scalar;
@@ -194,6 +213,8 @@ export class Matrix {
 
   /** Frobenius norm: sqrt(sum of squares). */
   norm(): number {
+    const w = engineNorm(this.data);
+    if (w !== null) return w;
     let sum = 0;
     for (let i = 0; i < this.data.length; i++) {
       sum += this.data[i]! * this.data[i]!;
@@ -222,6 +243,9 @@ export class Matrix {
     if (n === 0) return 1;
     if (n === 1) return this.data[0]!;
     if (n === 2) return this.data[0]! * this.data[3]! - this.data[1]! * this.data[2]!;
+
+    const wasmResult = engineDeterminant(this.data, n);
+    if (wasmResult !== null) return wasmResult;
 
     // Gaussian elimination with partial pivoting
     const a = new Float64Array(this.data);
@@ -301,6 +325,8 @@ export class Matrix {
 
   /** Dot product for two column vectors. */
   dot(other: Matrix): number {
+    const w = engineDot(this.data, other.data);
+    if (w !== null) return w;
     let sum = 0;
     for (let i = 0; i < this.data.length; i++) {
       sum += this.data[i]! * other.data[i]!;

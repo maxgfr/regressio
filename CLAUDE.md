@@ -1,4 +1,16 @@
 
+## Project
+
+regressio is a zero-dependency TypeScript regression & statistics library with a Rust/WASM engine for acceleration.
+
+- WASM auto-loads at import time — no `useWasmEngine()` call needed
+- `isWasmActive()` is the only engine export; all `use*` functions were removed
+- Rust source is in `rust/src/lib.rs`, compiled via `bun run build:wasm` (needs Rust + wasm32-unknown-unknown target)
+- `wasm-pack` is an npm devDependency, no system install needed
+- `bunup` resolves `#wasm-engine` at build time and embeds the WASM binary in `dist/`
+- The `pkg/` directory is committed and used at dev/build time; only `dist/` is published to npm
+- 18 Rust functions: matrix ops (multiply, transpose, add, subtract, scale, dot, norm, determinant), decompositions (QR, Cholesky, SVD, eigenvalues), solvers (forward/back sub), model algorithms (coordinate descent, softmax, euclidean/manhattan distances)
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`

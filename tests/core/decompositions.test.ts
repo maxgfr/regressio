@@ -3,6 +3,7 @@ import {
   backSubstitution,
   choleskyDecomposition,
   eigenvalues,
+  forwardSubstitution,
   qrDecomposition,
   solveCholesky,
   solveQR,
@@ -100,6 +101,33 @@ describe("Back Substitution", () => {
     const x = backSubstitution(R, b);
     expectClose(x.get(0, 0), 1); // 5 - 1*3 / 2
     expectClose(x.get(1, 0), 3);
+  });
+});
+
+describe("Forward Substitution", () => {
+  test("solves lower triangular system", () => {
+    // L = [[2,0],[1,3]], b = [4,7] => y = [2, 5/3]
+    const L = Matrix.fromArray([
+      [2, 0],
+      [1, 3],
+    ]);
+    const b = Matrix.columnVector([4, 7]);
+    const y = forwardSubstitution(L, b);
+    expectClose(y.get(0, 0), 2);
+    expectClose(y.get(1, 0), 5 / 3);
+  });
+
+  test("solves 3x3 lower triangular system", () => {
+    const L = Matrix.fromArray([
+      [1, 0, 0],
+      [2, 1, 0],
+      [3, 4, 1],
+    ]);
+    const b = Matrix.columnVector([1, 4, 15]);
+    const y = forwardSubstitution(L, b);
+    expectClose(y.get(0, 0), 1);
+    expectClose(y.get(1, 0), 2);
+    expectClose(y.get(2, 0), 4);
   });
 });
 

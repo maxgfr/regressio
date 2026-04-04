@@ -1,4 +1,12 @@
-import { engineCholesky, engineQR, engineSolveTriangular, isWasmActive } from "./engine";
+import {
+  engineCholesky,
+  engineEigenvalues,
+  engineForwardSubstitution,
+  engineQR,
+  engineSolveTriangular,
+  engineSVD,
+  isWasmActive,
+} from "./engine";
 import { Matrix } from "./matrix";
 
 // ---------------------------------------------------------------------------
@@ -187,6 +195,16 @@ export function choleskyDecomposition(A: Matrix): CholeskyResult {
 /** Forward substitution for lower triangular system Ly = b. */
 export function forwardSubstitution(L: Matrix, b: Matrix): Matrix {
   const n = L.rows;
+
+  if (isWasmActive()) {
+    const bFlat = new Float64Array(n);
+    for (let i = 0; i < n; i++) bFlat[i] = b.get(i, 0);
+    const wasmResult = engineForwardSubstitution(L.data, bFlat, n);
+    if (wasmResult) {
+      return Matrix.columnVector(Array.from(wasmResult));
+    }
+  }
+
   const y = new Float64Array(n);
   for (let i = 0; i < n; i++) {
     let sum = b.get(i, 0);
@@ -223,6 +241,18 @@ export function svd(A: Matrix): SVDResult {
   const m = A.rows;
   const n = A.cols;
   const k = Math.min(m, n);
+
+  // WASM fast path
+  if (isWasmActive()) {
+    const wasmResult = engineSVD(A.data, m, n);
+    if (wasmResult) {
+      return {
+        U: new Matrix(m, k, wasmResult.U),
+        S: Array.from(wasmResult.S),
+        V: new Matrix(n, k, wasmResult.V),
+      };
+    }
+  }
 
   // Work on a copy: we'll iteratively orthogonalize the columns
   const W = A.clone();
@@ -349,6 +379,14 @@ export function eigenvalues(A: Matrix): number[] {
   const n = A.rows;
   if (n === 0) return [];
   if (n === 1) return [A.get(0, 0)];
+
+  // WASM fast path
+  if (isWasmActive()) {
+    const wasmResult = engineEigenvalues(A.data, n);
+    if (wasmResult) {
+      return Array.from(wasmResult);
+    }
+  }
 
   let T = A.clone();
   const maxIter = 200;
