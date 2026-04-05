@@ -39,9 +39,13 @@ export class RobustRegression extends BaseRegression {
       const yHat = this.predict(Xmat);
       const residuals = y.map((yi, i) => yi - yHat[i]!);
 
-      // Estimate scale: MAD (median absolute deviation) / 0.6745
-      const absResiduals = residuals.map(Math.abs).sort((a, b) => a - b);
-      const mad = median(absResiduals);
+      // Estimate scale: MAD (median absolute deviation from median) / 0.6745
+      const sortedResiduals = [...residuals].sort((a, b) => a - b);
+      const residualMedian = median(sortedResiduals);
+      const absDeviations = residuals
+        .map((r) => Math.abs(r - residualMedian))
+        .sort((a, b) => a - b);
+      const mad = median(absDeviations);
       const scale = Math.max(mad / 0.6745, 1e-10);
 
       // Compute weights

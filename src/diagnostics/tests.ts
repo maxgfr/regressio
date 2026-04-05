@@ -1,4 +1,4 @@
-import { chi2TestPValue } from "../core/distributions";
+import { chi2TestPValue, normalCDF, normalInverseCDF } from "../core/distributions";
 import { LinearRegression } from "../models/linear-regression";
 import type { DataMatrix, DataVector, TestResult } from "../types";
 
@@ -74,8 +74,6 @@ export function shapiroWilk(data: DataVector): TestResult {
 
   // Compute expected normal order statistics and coefficients
   // Simplified: use approximation based on inverse normal CDF
-  const { normalInverseCDF } =
-    require("../core/distributions") as typeof import("../core/distributions");
   const m: number[] = [];
   for (let i = 0; i < n; i++) {
     const p = (i + 1 - 0.375) / (n + 0.25);
@@ -102,9 +100,7 @@ export function shapiroWilk(data: DataVector): TestResult {
   const mu = -1.2725 + 1.0521 * Math.log(n);
   const sigma = 1.0308 - 0.26758 * Math.log(n);
   const z = (lnW - mu) / sigma;
-  const { normalCDF: normCDF } =
-    require("../core/distributions") as typeof import("../core/distributions");
-  const pValue = 1 - normCDF(z);
+  const pValue = 1 - normalCDF(z);
 
   return { statistic, pValue: Math.max(0, Math.min(1, pValue)) };
 }

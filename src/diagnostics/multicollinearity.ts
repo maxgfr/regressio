@@ -1,4 +1,5 @@
 import { svd } from "../core/decompositions";
+import { engineCorrelationMatrix, engineVIF } from "../core/engine";
 import { Matrix } from "../core/matrix";
 import { LinearRegression } from "../models/linear-regression";
 import type { DataMatrix } from "../types";
@@ -6,16 +7,24 @@ import type { DataMatrix } from "../types";
 /**
  * Compute Variance Inflation Factor for each feature.
  * VIF_j = 1 / (1 - R²_j) where R²_j is from regressing x_j on all other x's.
+ * Equivalently, VIF_j = (C⁻¹)_{jj} where C is the correlation matrix.
  * VIF > 10 signals multicollinearity.
  */
 export function vif(X: DataMatrix): number[] {
+  const n = X.length;
   const p = X[0]!.length;
   if (p < 2) return [1];
 
+  // WASM fast path — compute VIF via correlation matrix inverse diagonal
+  const xFlat = new Float64Array(n * p);
+  for (let i = 0; i < n; i++) for (let j = 0; j < p; j++) xFlat[i * p + j] = X[i]![j]!;
+  const wasmResult = engineVIF(xFlat, n, p);
+  if (wasmResult) return Array.from(wasmResult);
+
+  // TypeScript fallback — p separate regressions
   const result: number[] = [];
 
   for (let j = 0; j < p; j++) {
-    // Build y = column j, X_other = all other columns
     const yCol = X.map((row) => row[j]!);
     const XOther = X.map((row) => row.filter((_, idx) => idx !== j));
 
@@ -38,7 +47,23 @@ export function correlationMatrix(X: DataMatrix): number[][] {
   const n = X.length;
   const p = X[0]!.length;
 
-  // Compute means
+  // WASM fast path
+  const xFlat = new Float64Array(n * p);
+  for (let i = 0; i < n; i++) for (let j = 0; j < p; j++) xFlat[i * p + j] = X[i]![j]!;
+  const wasmResult = engineCorrelationMatrix(xFlat, n, p);
+  if (wasmResult) {
+    const corr: number[][] = [];
+    for (let j1 = 0; j1 < p; j1++) {
+      const row: number[] = [];
+      for (let j2 = 0; j2 < p; j2++) {
+        row.push(wasmResult[j1 * p + j2]!);
+      }
+      corr.push(row);
+    }
+    return corr;
+  }
+
+  // TypeScript fallback
   const means: number[] = [];
   for (let j = 0; j < p; j++) {
     let sum = 0;
@@ -46,7 +71,6 @@ export function correlationMatrix(X: DataMatrix): number[][] {
     means.push(sum / n);
   }
 
-  // Compute stds
   const stds: number[] = [];
   for (let j = 0; j < p; j++) {
     let sum = 0;
@@ -57,7 +81,6 @@ export function correlationMatrix(X: DataMatrix): number[][] {
     stds.push(Math.sqrt(sum / n));
   }
 
-  // Compute correlation matrix
   const corr: number[][] = [];
   for (let j1 = 0; j1 < p; j1++) {
     const row: number[] = [];

@@ -1,4 +1,5 @@
 import { qrDecomposition, solveQR } from "../core/decompositions";
+import { engineIRLSLogistic } from "../core/engine";
 import { Matrix } from "../core/matrix";
 import type {
   ClassificationStatistics,
@@ -53,19 +54,41 @@ export class LogisticRegression {
       }
     }
 
-    this._X = Xmat;
     this._y = y;
 
     const n = Xmat.length;
     const Xdesign = this._fitIntercept ? this.addInterceptColumn(Xmat) : Xmat;
     const k = Xdesign[0]!.length;
 
-    // Initialize beta to zeros
+    // WASM fast path — full IRLS in Rust
+    const xFlat = new Float64Array(n * k);
+    for (let i = 0; i < n; i++) for (let j = 0; j < k; j++) xFlat[i * k + j] = Xdesign[i]![j]!;
+    const wasmBeta = engineIRLSLogistic(
+      xFlat,
+      new Float64Array(y),
+      n,
+      k,
+      this._maxIterations,
+      this._tolerance,
+    );
+    if (wasmBeta) {
+      const betaArray = Array.from(wasmBeta);
+      if (this._fitIntercept) {
+        this._intercept = betaArray[0]!;
+        this._coefficients = betaArray.slice(1);
+      } else {
+        this._intercept = 0;
+        this._coefficients = betaArray;
+      }
+      this._probabilities = this.predictProbability(Xmat);
+      this._fitted = true;
+      return this;
+    }
+
+    // TypeScript fallback — IRLS (Newton-Raphson)
     const beta = new Float64Array(k);
 
-    // IRLS (Newton-Raphson)
     for (let iter = 0; iter < this._maxIterations; iter++) {
-      // Compute linear predictor and probabilities
       const eta = new Float64Array(n);
       const p = new Float64Array(n);
       for (let i = 0; i < n; i++) {
@@ -77,7 +100,6 @@ export class LogisticRegression {
         p[i] = this.sigmoid(sum);
       }
 
-      // Compute weights W = p(1-p) and working response z
       const sqrtW = new Float64Array(n);
       const z = new Float64Array(n);
       for (let i = 0; i < n; i++) {
@@ -87,7 +109,6 @@ export class LogisticRegression {
         z[i] = eta[i]! + (y[i]! - pi) / wi;
       }
 
-      // Weighted X and z
       const XW = Matrix.zeros(n, k);
       const zW = Matrix.zeros(n, 1);
       for (let i = 0; i < n; i++) {
@@ -97,11 +118,9 @@ export class LogisticRegression {
         zW.set(i, 0, z[i]! * sqrtW[i]!);
       }
 
-      // Solve weighted least squares
       const { Q, R } = qrDecomposition(XW);
       const betaNew = solveQR(Q, R, zW);
 
-      // Check convergence
       let maxChange = 0;
       for (let j = 0; j < k; j++) {
         maxChange = Math.max(maxChange, Math.abs(betaNew.get(j, 0) - beta[j]!));
@@ -111,7 +130,6 @@ export class LogisticRegression {
       if (maxChange < this._tolerance) break;
     }
 
-    // Extract coefficients
     const betaArray = Array.from(beta);
     if (this._fitIntercept) {
       this._intercept = betaArray[0]!;

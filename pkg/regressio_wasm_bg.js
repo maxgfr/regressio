@@ -1,4 +1,27 @@
 /**
+ * Bootstrap OLS: run n_bootstrap resamples via efficient QR solve (no Q formation).
+ * Returns flat (n_bootstrap × n_params). NaN rows = singular sample.
+ * @param {Float64Array} x
+ * @param {Float64Array} y
+ * @param {number} n
+ * @param {number} p
+ * @param {boolean} fit_intercept
+ * @param {number} n_bootstrap
+ * @param {number} seed
+ * @returns {Float64Array}
+ */
+export function bootstrap_ols(x, y, n, p, fit_intercept, n_bootstrap, seed) {
+    const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(y, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.bootstrap_ols(ptr0, len0, ptr1, len1, n, p, fit_intercept, n_bootstrap, seed);
+    var v3 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v3;
+}
+
+/**
  * Cholesky decomposition: A = L·L^T. Returns L (n*n flat).
  * @param {Float64Array} data
  * @param {number} n
@@ -40,6 +63,22 @@ export function coordinate_descent(x, y, alpha, l1_ratio, max_iter, tolerance, n
 }
 
 /**
+ * Pearson correlation matrix from flat row-major X (n × p). Returns flat p × p.
+ * @param {Float64Array} x
+ * @param {number} n
+ * @param {number} p
+ * @returns {Float64Array}
+ */
+export function correlation_matrix(x, n, p) {
+    const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.correlation_matrix(ptr0, len0, n, p);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
  * @param {Float64Array} data
  * @param {number} n
  * @returns {number}
@@ -52,7 +91,9 @@ export function determinant(data, n) {
 }
 
 /**
- * Eigenvalues of a symmetric matrix (QR + Wilkinson shift). Sorted descending.
+ * Eigenvalues of a symmetric matrix via Householder tridiagonalization + QL iteration.
+ * O(n³) tridiag + O(n·iter) QL, much faster than the old O(n³·iter) full QR approach.
+ * Sorted descending.
  * @param {Float64Array} data
  * @param {number} n
  * @returns {Float64Array}
@@ -114,6 +155,30 @@ export function frobenius_norm(a) {
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.frobenius_norm(ptr0, len0);
     return ret;
+}
+
+/**
+ * Full IRLS (Newton-Raphson) for binary logistic regression.
+ * x: design matrix (n × k, row-major, INCLUDING intercept column if needed)
+ * y: binary labels (0/1), length n
+ * Returns: beta coefficients (length k)
+ * @param {Float64Array} x
+ * @param {Float64Array} y
+ * @param {number} n
+ * @param {number} k
+ * @param {number} max_iter
+ * @param {number} tolerance
+ * @returns {Float64Array}
+ */
+export function irls_logistic(x, y, n, k, max_iter, tolerance) {
+    const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(y, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.irls_logistic(ptr0, len0, ptr1, len1, n, k, max_iter, tolerance);
+    var v3 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v3;
 }
 
 /**
@@ -295,6 +360,23 @@ export function vector_dot(a, b) {
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.vector_dot(ptr0, len0, ptr1, len1);
     return ret;
+}
+
+/**
+ * Compute VIF from X (n × p) via correlation matrix inverse diagonal.
+ * VIF_j = (C⁻¹)_{jj} where C is the Pearson correlation matrix.
+ * @param {Float64Array} x
+ * @param {number} n
+ * @param {number} p
+ * @returns {Float64Array}
+ */
+export function vif(x, n, p) {
+    const ptr0 = passArrayF64ToWasm0(x, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.vif(ptr0, len0, n, p);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
 }
 export function __wbindgen_init_externref_table() {
     const table = wasm.__wbindgen_externrefs;

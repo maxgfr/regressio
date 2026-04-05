@@ -303,9 +303,11 @@ regressio ships with a pre-compiled Rust/WASM engine that activates automaticall
 
 **Accelerated operations:**
 - Matrix: multiply, transpose, add, subtract, scale, dot product, norm, determinant
-- Decompositions: QR, Cholesky, SVD, eigenvalues
+- Decompositions: QR, Cholesky, SVD, eigenvalues (tridiagonal QL)
 - Solvers: forward/back substitution
-- Models: Lasso/Elastic Net coordinate descent, softmax, KNN distance matrices
+- Models: Lasso/Elastic Net coordinate descent, logistic regression IRLS, softmax, KNN distance matrices
+- Diagnostics: correlation matrix, VIF (via correlation matrix inverse)
+- Predictions: bootstrap OLS (1000+ resamples in a single WASM call)
 
 If WASM is unavailable (e.g. unsupported runtime), all operations fall back silently to pure TypeScript.
 

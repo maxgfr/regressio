@@ -58,6 +58,25 @@ interface WasmModule {
     n_test: number,
     dim: number,
   ): Float64Array;
+  correlation_matrix(x: Float64Array, n: number, p: number): Float64Array;
+  bootstrap_ols(
+    x: Float64Array,
+    y: Float64Array,
+    n: number,
+    p: number,
+    fit_intercept: boolean,
+    n_bootstrap: number,
+    seed: number,
+  ): Float64Array;
+  vif(x: Float64Array, n: number, p: number): Float64Array;
+  irls_logistic(
+    x: Float64Array,
+    y: Float64Array,
+    n: number,
+    k: number,
+    max_iter: number,
+    tolerance: number,
+  ): Float64Array;
 }
 
 interface ComputeEngine {
@@ -69,9 +88,10 @@ let currentEngine: ComputeEngine = { name: "typescript" };
 
 // Auto-init: silently try to load WASM at module load time.
 import("#wasm-engine")
-  .then((wasm: unknown) => {
+  .then(async (mod: { initWasm: () => Promise<void> }) => {
+    await mod.initWasm();
     if (currentEngine.name === "typescript") {
-      currentEngine = { name: "wasm", wasm: wasm as WasmModule };
+      currentEngine = { name: "wasm", wasm: mod as unknown as WasmModule };
     }
   })
   .catch(() => {
@@ -277,5 +297,49 @@ export function engineManhattanDistances(
 ): Float64Array | null {
   if (currentEngine.wasm)
     return currentEngine.wasm.manhattan_distances(train, test, nTrain, nTest, dim);
+  return null;
+}
+
+/** Pearson correlation matrix. Returns flat p × p or null. */
+export function engineCorrelationMatrix(
+  x: Float64Array,
+  n: number,
+  p: number,
+): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.correlation_matrix(x, n, p);
+  return null;
+}
+
+/** Bootstrap OLS. Returns flat (nBootstrap × nParams) or null. NaN rows = singular sample. */
+export function engineBootstrapOLS(
+  x: Float64Array,
+  y: Float64Array,
+  n: number,
+  p: number,
+  fitIntercept: boolean,
+  nBootstrap: number,
+  seed: number,
+): Float64Array | null {
+  if (currentEngine.wasm)
+    return currentEngine.wasm.bootstrap_ols(x, y, n, p, fitIntercept, nBootstrap, seed);
+  return null;
+}
+
+/** VIF from X. Returns Float64Array of p VIF values or null. */
+export function engineVIF(x: Float64Array, n: number, p: number): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.vif(x, n, p);
+  return null;
+}
+
+/** Full IRLS logistic regression. x = design matrix (n×k), y = labels (n). Returns beta (k) or null. */
+export function engineIRLSLogistic(
+  x: Float64Array,
+  y: Float64Array,
+  n: number,
+  k: number,
+  maxIter: number,
+  tolerance: number,
+): Float64Array | null {
+  if (currentEngine.wasm) return currentEngine.wasm.irls_logistic(x, y, n, k, maxIter, tolerance);
   return null;
 }
