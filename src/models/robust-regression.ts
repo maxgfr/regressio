@@ -36,7 +36,7 @@ export class RobustRegression extends BaseRegression {
       const prevIntercept = this._intercept;
 
       // Compute residuals
-      const yHat = this.predict(Xmat);
+      const yHat = this.predictLinearRows(Xmat);
       const residuals = y.map((yi, i) => yi - yHat[i]!);
 
       // Estimate scale: MAD (median absolute deviation from median) / 0.6745
@@ -70,20 +70,12 @@ export class RobustRegression extends BaseRegression {
       if (maxChange < this._tolerance) break;
     }
 
-    this._yHat = this.predict(Xmat);
-    this._fitted = true;
+    this.completeFit(Xmat);
     return this;
   }
 
   predict(X: DataInput): DataVector {
-    const Xmat = this.normalizeInput(X);
-    return Xmat.map((row) => {
-      let sum = this._intercept;
-      for (let j = 0; j < this._coefficients.length; j++) {
-        sum += row[j]! * this._coefficients[j]!;
-      }
-      return sum;
-    });
+    return this.predictLinearRows(this.validatePredictInput(X));
   }
 }
 

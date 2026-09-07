@@ -41,13 +41,12 @@ export class PolynomialRegression extends BaseRegression {
 
     this._coefficients = this._inner.coefficients;
     this._intercept = this._inner.intercept;
-    this._yHat = this.predict(Xmat);
-    this._fitted = true;
+    this.completeFit(Xmat, Xexpanded);
     return this;
   }
 
   predict(X: DataInput): DataVector {
-    const Xmat = this.normalizeInput(X);
+    const Xmat = this.validatePredictInput(X);
     const Xexpanded = this.expandFeatures(Xmat);
     return this._inner.predict(Xexpanded);
   }

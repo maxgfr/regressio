@@ -2,6 +2,8 @@
 
 Zero-dependency TypeScript regression, classification & statistics library with full statistical outputs, diagnostics, and preprocessing. Ships with an optional Rust/WASM engine for accelerated linear algebra.
 
+[Open the live browser proof suite](https://maxgfr.github.io/regressio/) to run all 36 public exports against synthetic datasets, inspect fitted traces and diagnostics, and confirm the WebAssembly engine is active.
+
 ## Install
 
 ```bash
@@ -328,6 +330,19 @@ The pre-built WASM binary is included in the package. To rebuild from Rust sourc
 ```bash
 bun run build:wasm
 ```
+
+## Browser proof suite
+
+The site in [`site/`](site/) is a Vite application that runs regressio in a Web Worker. Its scenario registry covers every runtime export and every declared public class method. The generated charts and values come from the library itself; no result is hard-coded.
+
+```bash
+bun run dev:site       # local development
+bun run build:site     # production output in site-dist/
+bun run test:site      # export and public-method coverage
+bun run test:e2e       # Chromium + mobile WebKit, WASM + fallback
+```
+
+GitHub Pages is deployed from `.github/workflows/pages.yml` after the unit, browser, and accessibility checks pass.
 
 ## License
 

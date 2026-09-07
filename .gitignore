@@ -3,6 +3,7 @@ node_modules/
 
 # build output
 dist/
+site-dist/
 target/
 *.tgz
 
@@ -18,6 +19,13 @@ coverage/
 # caches
 .cache
 *.tsbuildinfo
+playwright-report/
+.ultra11y/
+test-results/
+.impeccable/build/
+.impeccable/review/
+.impeccable/mocks/comp-b-*
+.impeccable/mocks/comp-c-*
 
 # IDE
 .idea

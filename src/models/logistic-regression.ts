@@ -8,6 +8,7 @@ import type {
   DataVector,
   LogisticOptions,
 } from "../types";
+import { normalizeModelInput, validateFeatureCount, validateTargets } from "./input-validation";
 
 export class LogisticRegression {
   private _coefficients: number[] = [];
@@ -18,6 +19,7 @@ export class LogisticRegression {
   private _tolerance: number;
   private _y: DataVector = [];
   private _probabilities: DataVector = [];
+  private _nFeatures = 0;
 
   constructor(options: LogisticOptions = {}) {
     this._fitIntercept = options.fitIntercept ?? true;
@@ -42,10 +44,9 @@ export class LogisticRegression {
   }
 
   fit(X: DataInput, y: DataVector): this {
-    const Xmat = this.normalizeInput(X);
-    if (Xmat.length !== y.length) {
-      throw new Error(`X has ${Xmat.length} rows but y has ${y.length} elements`);
-    }
+    const Xmat = normalizeModelInput(X);
+    validateTargets(y, Xmat.length);
+    this._nFeatures = Xmat[0]!.length;
 
     // Validate y is binary
     for (const yi of y) {
@@ -80,8 +81,8 @@ export class LogisticRegression {
         this._intercept = 0;
         this._coefficients = betaArray;
       }
-      this._probabilities = this.predictProbability(Xmat);
       this._fitted = true;
+      this._probabilities = this.predictProbability(Xmat);
       return this;
     }
 
@@ -140,8 +141,8 @@ export class LogisticRegression {
     }
 
     // Store probabilities
-    this._probabilities = this.predictProbability(Xmat);
     this._fitted = true;
+    this._probabilities = this.predictProbability(Xmat);
     return this;
   }
 
@@ -150,7 +151,9 @@ export class LogisticRegression {
   }
 
   predictProbability(X: DataInput): DataVector {
-    const Xmat = this.normalizeInput(X);
+    if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
+    const Xmat = normalizeModelInput(X);
+    validateFeatureCount(Xmat, this._nFeatures);
     return Xmat.map((row) => {
       let sum = this._intercept;
       for (let j = 0; j < this._coefficients.length; j++) {
@@ -217,14 +220,6 @@ export class LogisticRegression {
       aic,
       bic,
     };
-  }
-
-  private normalizeInput(X: DataInput): DataMatrix {
-    if (X.length === 0) throw new Error("Input data cannot be empty");
-    if (typeof X[0] === "number") {
-      return (X as number[]).map((v) => [v]);
-    }
-    return X as DataMatrix;
   }
 
   private addInterceptColumn(X: DataMatrix): DataMatrix {

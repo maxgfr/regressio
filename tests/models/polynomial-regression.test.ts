@@ -42,6 +42,16 @@ describe("PolynomialRegression", () => {
     expect(pred[0]).toBeCloseTo(25, 2);
   });
 
+  test("statistics use the expanded polynomial design matrix", () => {
+    const X = Array.from({ length: 36 }, (_, index) => (index - 17.5) / 1.75);
+    const y = X.map((x) => -0.03 * x * x + 2.5 * x - 1);
+    const model = new PolynomialRegression({ degree: 2 }).fit(X, y);
+
+    expect(model.statistics().rSquared).toBeCloseTo(1, 10);
+    expect(model.statistics().standardErrors).toHaveLength(3);
+    expect(model.summary()).toContain("Coefficients:");
+  });
+
   test("rejects multi-feature input", () => {
     const X = [
       [1, 2],

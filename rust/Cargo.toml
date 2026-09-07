@@ -2,6 +2,9 @@
 name = "regressio-wasm"
 version = "0.1.0"
 edition = "2021"
+description = "Rust/WASM acceleration engine for regressio"
+repository = "https://github.com/maxgfr/regressio"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib"]

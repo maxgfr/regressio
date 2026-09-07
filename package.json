@@ -2,6 +2,7 @@
   "name": "regressio",
   "version": "0.0.1",
   "description": "Zero-dependency TypeScript regression & statistics library: OLS, Ridge, Lasso, Elastic Net, WLS, Robust, Polynomial, and Logistic regression with full statistical outputs, diagnostics, and preprocessing",
+  "homepage": "https://maxgfr.github.io/regressio/",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -29,10 +30,17 @@
     "build:ts": "bunup src/index.ts --format esm,cjs --dts",
     "build:fix-wasm": "for f in dist/regressio_wasm_bg-*.wasm; do cp pkg/regressio_wasm_bg.wasm \"$f\"; done",
     "build": "bun run build:ts && bun run build:fix-wasm",
-    "test": "bun test",
-    "lint": "biome check src tests",
-    "lint:fix": "biome check --write src tests",
-    "check": "bun run lint && bun run test",
+    "build:site": "bun run build && vite build --config site/vite.config.ts && bun run build:site:copy-wasm",
+    "build:site:copy-wasm": "for f in dist/regressio_wasm_bg-*.wasm; do cp \"$f\" site-dist/; done",
+    "dev:site": "bun run build && vite --config site/vite.config.ts",
+    "preview:site": "vite preview --config site/vite.config.ts",
+    "test": "bun test tests",
+    "test:site": "bun test site/tests",
+    "test:e2e": "playwright test --config site/playwright.config.ts",
+    "typecheck:site": "tsc -p site/tsconfig.json",
+    "lint": "biome check src tests site/src site/tests",
+    "lint:fix": "biome check --write src tests site/src site/tests",
+    "check": "bun run lint && bun run test && bun run build:site && bun run typecheck:site && bun run test:site",
     "release": "semantic-release"
   },
   "keywords": [
@@ -59,7 +67,9 @@
     "url": "git+https://github.com/maxgfr/regressio.git"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@biomejs/biome": "^2.4.10",
+    "@playwright/test": "^1.55.0",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.5",
@@ -68,7 +78,8 @@
     "bunup": "^0.16.31",
     "semantic-release": "^25.0.3",
     "typescript": "^5.9.3",
-    "wasm-pack": "^0.14.0"
+    "vite": "^7.1.0",
+    "wasm-pack": "0.15.0"
   },
   "trustedDependencies": [
     "wasm-pack"

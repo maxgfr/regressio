@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-07T14:08:43Z",
+  "title": "Design System: regressio",
+  "extensions": {
+    "colorMeta": {
+      "plotting-blue": {
+        "role": "primary",
+        "displayName": "Plotting Blue",
+        "canonical": "#1239c5",
+        "tonalRamp": ["oklch(15% 0.2 265)", "oklch(25% 0.2 265)", "oklch(35% 0.2 265)", "oklch(45% 0.2 265)", "oklch(58% 0.2 265)", "oklch(70% 0.2 265)", "oklch(82% 0.2 265)", "oklch(95% 0.2 265)"]
+      },
+      "plotting-blue-light": {
+        "role": "primary",
+        "displayName": "Light Plotting Blue",
+        "canonical": "#94a9eb",
+        "tonalRamp": ["oklch(15% 0.1 265)", "oklch(25% 0.1 265)", "oklch(35% 0.1 265)", "oklch(45% 0.1 265)", "oklch(58% 0.1 265)", "oklch(70% 0.1 265)", "oklch(82% 0.1 265)", "oklch(95% 0.1 265)"]
+      },
+      "safety-orange": {
+        "role": "tertiary",
+        "displayName": "Safety Orange",
+        "canonical": "#d63c12",
+        "tonalRamp": ["oklch(15% 0.2 35)", "oklch(25% 0.2 35)", "oklch(35% 0.2 35)", "oklch(45% 0.2 35)", "oklch(58% 0.2 35)", "oklch(70% 0.2 35)", "oklch(82% 0.2 35)", "oklch(95% 0.2 35)"]
+      },
+      "drafting-paper": {
+        "role": "neutral",
+        "displayName": "Drafting Paper",
+        "canonical": "#f8f8f8",
+        "tonalRamp": ["oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(45% 0 0)", "oklch(58% 0 0)", "oklch(70% 0 0)", "oklch(82% 0 0)", "oklch(95% 0 0)"]
+      },
+      "raised-paper": {
+        "role": "neutral",
+        "displayName": "Raised Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": ["oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(45% 0 0)", "oklch(58% 0 0)", "oklch(70% 0 0)", "oklch(82% 0 0)", "oklch(95% 0 0)"]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#171916",
+        "tonalRamp": ["oklch(15% 0.008 145)", "oklch(25% 0.008 145)", "oklch(35% 0.008 145)", "oklch(45% 0.008 145)", "oklch(58% 0.008 145)", "oklch(70% 0.008 145)", "oklch(82% 0.008 145)", "oklch(95% 0.008 145)"]
+      },
+      "graphite-muted": {
+        "role": "neutral",
+        "displayName": "Muted Graphite",
+        "canonical": "#5f645f",
+        "tonalRamp": ["oklch(15% 0.01 145)", "oklch(25% 0.01 145)", "oklch(35% 0.01 145)", "oklch(45% 0.01 145)", "oklch(58% 0.01 145)", "oklch(70% 0.01 145)", "oklch(82% 0.01 145)", "oklch(95% 0.01 145)"]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#c4c9c2",
+        "tonalRamp": ["oklch(15% 0.012 140)", "oklch(25% 0.012 140)", "oklch(35% 0.012 140)", "oklch(45% 0.012 140)", "oklch(58% 0.012 140)", "oklch(70% 0.012 140)", "oklch(82% 0.012 140)", "oklch(95% 0.012 140)"]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "canonical": "#8b918a",
+        "tonalRamp": ["oklch(15% 0.012 140)", "oklch(25% 0.012 140)", "oklch(35% 0.012 140)", "oklch(45% 0.012 140)", "oklch(58% 0.012 140)", "oklch(70% 0.012 140)", "oklch(82% 0.012 140)", "oklch(95% 0.012 140)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Condensed Display", "purpose": "Short section claims with maximum visual weight." },
+      "title": { "displayName": "Instrument Title", "purpose": "Dataset, plot, and panel headings." },
+      "body": { "displayName": "Condensed Body", "purpose": "Explanations and supporting prose." },
+      "label": { "displayName": "Equipment Label", "purpose": "Uppercase actions, tabs, and compact headings." },
+      "readout": { "displayName": "Tabular Readout", "purpose": "Measurements, results, equations, and code-adjacent evidence." },
+      "wordmark": { "displayName": "Hand-Drawn Wordmark", "purpose": "The regressio name only." }
+    },
+    "shadows": [
+      { "name": "plotter-contact", "value": "drop-shadow(0 8px 7px rgba(23, 25, 22, 0.18))", "purpose": "Places the transparent carriage physically above the primary plot." }
+    ],
+    "motion": [
+      { "name": "trace-draw", "value": "1.25s cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Draws a completed model trace from its dashed offset." },
+      { "name": "carriage-settle", "value": "700ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Settles the carriage after a successful suite run." },
+      { "name": "running-spin", "value": "0.75s linear infinite", "purpose": "Turns the action marker into a running indicator; removed under reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "stack", "value": "900px" },
+      { "name": "compact", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact mechanical action for running the suite or copying code.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\"><span class=\"ds-btn-primary__mark\" aria-hidden=\"true\"></span>Run suite</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; gap:.55rem; border:1px solid var(--graphite); border-radius:0; padding:.65rem .85rem; color:var(--paper-raised); background:var(--graphite); font:800 .7rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-btn-primary__mark { width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid currentColor; } .ds-btn-primary:hover { background:var(--ink); border-color:var(--ink); } .ds-btn-primary:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-btn-primary:active { transform:translateY(1px); } .ds-btn-primary:disabled { cursor:progress; opacity:.65; }"
+    },
+    {
+      "name": "Family Tab",
+      "kind": "chip",
+      "refersTo": "tab-family",
+      "description": "A ruled family selector that becomes plotting blue when selected.",
+      "html": "<button class=\"ds-family-tab\" type=\"button\" aria-selected=\"true\">Regression</button>",
+      "css": ".ds-family-tab { min-width:9rem; min-height:3.5rem; border:0; border-right:1px solid var(--rule-strong); border-radius:0; color:var(--graphite); background:transparent; box-shadow:inset 0 0 0 1px var(--rule-strong); font:800 .75rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-family-tab:hover { color:var(--ink); } .ds-family-tab[aria-selected=\"true\"] { color:var(--paper-raised); background:var(--ink); } .ds-family-tab:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-family-tab:active { filter:brightness(.92); }"
+    },
+    {
+      "name": "Proof Readout",
+      "kind": "custom",
+      "refersTo": "proof-readout",
+      "description": "A ruled metric pairing a compact equipment label with a tabular result.",
+      "html": "<div class=\"ds-proof-readout\"><span>Export coverage</span><strong>36 / 36 APIs</strong></div>",
+      "css": ".ds-proof-readout { display:flex; min-height:5.5rem; flex-direction:column; justify-content:center; gap:.12rem; padding:0 1rem; border-bottom:1px solid var(--rule); color:var(--graphite); background:var(--paper); } .ds-proof-readout span { color:var(--graphite-muted); font:.7rem/1 var(--mono); letter-spacing:.09em; text-transform:uppercase; } .ds-proof-readout strong { color:#424542; font:400 clamp(.85rem, 1.65vw, 1.75rem)/1 var(--mono); font-variant-numeric:tabular-nums; text-transform:uppercase; } .ds-proof-readout:hover strong { color:var(--ink); } .ds-proof-readout:focus-within { outline:3px solid var(--orange); outline-offset:4px; }"
+    },
+    {
+      "name": "Ruled Data Table",
+      "kind": "custom",
+      "description": "Dense evidence table with tabular figures and one-pixel row rules.",
+      "html": "<table class=\"ds-proof-table\"><caption>Representative checks</caption><thead><tr><th>Check</th><th>Value</th><th>Status</th></tr></thead><tbody><tr><td>OLS R²</td><td>0.9938</td><td>PASS</td></tr><tr><td>Cook max</td><td>0.1164</td><td>PASS</td></tr></tbody></table>",
+      "css": ".ds-proof-table { width:100%; border-collapse:collapse; color:var(--graphite-muted); background:var(--paper); font:400 .75rem/1.45 var(--mono); font-variant-numeric:tabular-nums; } .ds-proof-table caption { padding:0 0 .45rem; font:800 .75rem/1 var(--sans); letter-spacing:.08em; text-align:left; text-transform:uppercase; } .ds-proof-table th, .ds-proof-table td { padding:.32rem .2rem; border-bottom:1px solid var(--rule); text-align:left; } .ds-proof-table th:last-child, .ds-proof-table td:last-child { text-align:right; } .ds-proof-table tbody tr:hover { color:var(--ink); } .ds-proof-table:focus-visible { outline:3px solid var(--orange); outline-offset:4px; }"
+    },
+    {
+      "name": "Plot Legend",
+      "kind": "custom",
+      "description": "An unboxed key that distinguishes primary, secondary, and robust traces.",
+      "html": "<div class=\"ds-plot-legend\"><div><i class=\"ds-key ds-key--ols\"></i><span>OLS line</span><code>y = 2.492x − 1.000</code></div><div><i class=\"ds-key ds-key--poly\"></i><span>Poly (deg 2)</span><code>r² = 0.987</code></div><div><i class=\"ds-key ds-key--robust\"></i><span>Robust line</span><code>y = 2.492x − 1.000</code></div></div>",
+      "css": ".ds-plot-legend { display:flex; flex-direction:column; gap:.65rem; padding:.65rem; color:var(--ink); background:var(--paper); font:400 .75rem/1.35 var(--sans); text-transform:uppercase; } .ds-plot-legend>div { display:grid; grid-template-columns:1.2rem 6rem 1fr; gap:.35rem; align-items:center; } .ds-plot-legend code { color:var(--ink); font:400 .75rem/1.35 var(--mono); text-transform:none; } .ds-key { display:block; height:2px; background:var(--ink); } .ds-key--poly { background:var(--ink-light); } .ds-key--robust { height:1px; background:repeating-linear-gradient(to right, var(--graphite) 0 6px, transparent 6px 10px); } .ds-plot-legend:hover { color:var(--graphite); } .ds-plot-legend:focus-within { outline:3px solid var(--orange); outline-offset:4px; }"
+    },
+    {
+      "name": "Code Proof",
+      "kind": "custom",
+      "description": "Executed browser code shown as the sole dark evidence field in the lab.",
+      "html": "<pre class=\"ds-code-proof\"><code>const model = new LinearRegression();\nmodel.fit(X, y);\nconst yHat = model.predict(X);</code></pre>",
+      "css": ".ds-code-proof { min-width:18rem; min-height:12rem; margin:0; overflow:auto; padding:1.4rem; border:0; border-radius:0; color:#dce2ff; background:#161b30; font:400 .8rem/1.45 var(--mono); } .ds-code-proof:hover { outline:1px solid var(--ink-light); } .ds-code-proof:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-code-proof:active { outline-color:var(--ink); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Plotter Acceptance Sheet",
+    "overview": "regressio feels like a calibrated technical sheet caught midway through a proof run: cool paper, exact graphite rulings, measured readouts, and a saturated blue pen trace. Information stays exposed and continuous. The visual hierarchy comes from scale, alignment, and ruled partitions instead of a collection of floating dashboard cards.\n\nThe system is dense but calm. Large condensed headlines establish the claim, monospaced measurements make evidence scannable, and the realistic plotter carriage gives the otherwise flat world one physical signature. Every expressive move should help a developer see the suite pass, follow the trace, or inspect the underlying results.",
+    "keyCharacteristics": [
+      "Cool drafting-paper ground with graphite structure.",
+      "Saturated plotting blue for active traces, selections, and positive proof emphasis.",
+      "Safety orange reserved for failures and the keyboard focus ring.",
+      "Condensed sans-serif hierarchy paired with tabular monospaced evidence.",
+      "Registration marks, calibration ticks, ruled tabs, and plots without card shells.",
+      "A single plotter carriage supplies the system's realistic material accent."
+    ],
+    "rules": [
+      { "name": "The One Ink Rule", "body": "Plotting blue carries the active trace and current selection; keep it scarce enough that the live result remains the clearest blue object.", "section": "colors" },
+      { "name": "The Safety Exception Rule", "body": "Safety orange appears only when the interface requires immediate attention: a failed proof or a visible keyboard focus target.", "section": "colors" },
+      { "name": "The Continuous Sheet Rule", "body": "Separate regions with graphite rules and alignment before introducing another surface color.", "section": "colors" },
+      { "name": "The Measured Evidence Rule", "body": "Numbers, equations, timings, and runtime states use the monospaced readout face with tabular figures.", "section": "typography" },
+      { "name": "The Condensed Claim Rule", "body": "Large statements use a tight condensed display; do not expand them into wide, soft marketing typography.", "section": "typography" },
+      { "name": "The Dominant Plot Rule", "body": "On wide screens, reserve roughly four-fifths of the proof sheet for the drawing field and one-fifth for vertically aligned evidence.", "section": "layout" },
+      { "name": "The Stack Without Cards Rule", "body": "Responsive layouts preserve ruled continuity by stacking the same regions and borders; they do not turn those regions into detached cards.", "section": "layout" },
+      { "name": "The One Physical Object Rule", "body": "Realistic depth belongs to the plotter carriage; all interface surfaces remain flat and ruled.", "section": "elevation" },
+      { "name": "The Instrument Geometry Rule", "body": "Use straight edges for information and circles for instrument state or calibration details.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep evidence visible: pair claims with live values, equations, timings, or status.",
+      "Do use one-pixel graphite rules to create hierarchy across continuous paper.",
+      "Do reserve plotting blue for the active trace, selected controls, and explicit proof emphasis.",
+      "Do use monospaced tabular figures for measurements and results.",
+      "Do preserve keyboard focus visibility and reduced-motion behavior.",
+      "Do let the plotter carriage be the one realistic, shadowed signature."
+    ],
+    "donts": [
+      "Don't break proof surfaces into rounded, floating dashboard cards.",
+      "Don't add decorative shadows to tabs, tables, buttons, or proof blocks.",
+      "Don't use safety orange as a general accent or decorative highlight.",
+      "Don't crowd the sheet with multiple realistic machines or competing hero objects.",
+      "Don't replace ruled structure with soft containers, gradients, or ornamental chrome."
+    ]
+  }
+}

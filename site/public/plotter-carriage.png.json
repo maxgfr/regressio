@@ -1,0 +1,8 @@
+{
+  "generator": "OpenAI imagegen",
+  "createdAt": "2026-09-07",
+  "useCase": "transparent interface plate",
+  "reference": ".impeccable/mocks/comp-a-asymmetric.png",
+  "prompt": "plotter-carriage.png.prompt.txt",
+  "generationId": "exec-42e3cbf2-0747-41d6-b080-9332fce65898"
+}
