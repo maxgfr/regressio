@@ -4,6 +4,7 @@ description: A browser proof suite drawn as a pen-plotter acceptance sheet.
 colors:
   plotting-blue: "#1239c5"
   plotting-blue-light: "#94a9eb"
+  system-green: "#16702a"
   safety-orange: "#d63c12"
   drafting-paper: "#f8f8f8"
   raised-paper: "#ffffff"
@@ -70,6 +71,18 @@ components:
     typography: "{typography.label}"
     rounded: "{rounded.square}"
     padding: "0.65rem 0.85rem"
+  button-copy-success:
+    backgroundColor: "{colors.system-green}"
+    textColor: "{colors.raised-paper}"
+    typography: "{typography.label}"
+    rounded: "{rounded.square}"
+    padding: "0.45rem 0.7rem"
+  button-copy-error:
+    backgroundColor: "{colors.safety-orange}"
+    textColor: "{colors.raised-paper}"
+    typography: "{typography.label}"
+    rounded: "{rounded.square}"
+    padding: "0.45rem 0.7rem"
   tab-family:
     backgroundColor: "transparent"
     textColor: "{colors.graphite}"
@@ -108,6 +121,7 @@ The system is dense but calm. Large condensed headlines establish the claim, mon
 - Condensed sans-serif hierarchy paired with tabular monospaced evidence.
 - Registration marks, calibration ticks, ruled tabs, and plots without card shells.
 - A single plotter carriage supplies the system's realistic material accent.
+- State-driven motion separates calibration, proof drawing, and family inspection.
 
 ## Colors
 
@@ -118,9 +132,13 @@ The palette reads like drafting media: near-white paper, low-chroma graphite and
 - **Plotting Blue** (`#1239c5`): draws the main regression trace and marks active or selected controls.
 - **Light Plotting Blue** (`#94a9eb`): distinguishes secondary traces without competing with the primary line.
 
+### Secondary
+
+- **System Green** (`#16702a`): confirms a healthy runtime and a successful clipboard write.
+
 ### Tertiary
 
-- **Safety Orange** (`#d63c12`): signals failures and forms the highly visible keyboard focus outline.
+- **Safety Orange** (`#d63c12`): signals proof and clipboard failures and forms the highly visible keyboard focus outline.
 
 ### Neutral
 
@@ -205,7 +223,9 @@ Controls, code fields, proof blocks, and tabs use square corners. Fine one-pixel
 ### Tabs
 
 - **Style:** family choices form one continuous ruled row, with square cells, uppercase condensed labels, and a minimum height of `3.5rem`.
-- **State:** the selected tab becomes solid plotting blue with raised-paper text; hover changes the label to blue before selection.
+- **State:** the selected tab becomes solid plotting blue with raised-paper text; the matching family-index link receives the same filled active treatment and `aria-current`, while hover changes the label to blue before selection.
+- **Activation:** the selected tab and matching family-index link replay a `480ms` control punch, compressing briefly to 96% scale between a raised-paper inset and blue outer rule.
+- **Panel Transition:** changing families replays a `520ms` fast-out entrance from `0.6rem` below and 25% opacity. A blue scan crosses the panel over `680ms`; rows print from `1.25rem` left over `360ms`, delayed by `120ms` plus `36ms` per row; the code field reveals from left to right over `560ms`.
 - **Responsive:** six columns become three at the medium breakpoint and two on small screens.
 
 ### Tables / Containers
@@ -218,7 +238,7 @@ Controls, code fields, proof blocks, and tabs use square corners. Fine one-pixel
 
 ### Navigation
 
-The family index is a full-width ruled strip whose equal-width links behave like labeled machine bays. Links retain the paper ground until hover, when plotting blue fills the entire cell. On small screens, the strip wraps into a two-column matrix without adding card gaps or rounded corners.
+The family index is a full-width ruled strip whose equal-width links behave like labeled machine bays. Links retain the paper ground until hover or until their family becomes active, when plotting blue fills the entire cell. The active link stays synchronized with the selected lab tab and exposes `aria-current`. Activating a family shortcut first scrolls smoothly to the labs, then changes the family after `450ms` so the destination is in view before control and panel feedback begin; reduced-motion mode activates it immediately. On small screens, the strip wraps into a two-column matrix without adding card gaps or rounded corners.
 
 ### Proof Readout
 
@@ -226,11 +246,19 @@ Each metric pairs a small uppercase monospaced label with a larger monospaced va
 
 ### Plot and Carriage
 
-Plots remain unboxed on the drafting ground. Fine rule grids, hollow graphite points, distinct solid/dashed traces, and a compact equation key explain the drawing directly. On a completed suite, the blue path draws over `1.25s` and the carriage settles over `700ms`, both with a fast-out easing curve; reduced-motion mode presents the final state immediately.
+Plots remain unboxed on the drafting ground. Fine rule grids, hollow graphite points, distinct solid/dashed traces, and a compact equation key explain the drawing directly.
+
+Starting a run changes the root state to `running` for at least `900ms`. During that calibration pass, a one-pixel blue sweep crosses the graph over `900ms` linearly, the robust dashed trace advances every `220ms`, and the carriage oscillates by two pixels over `160ms` with an alternating ease-in-out cycle. A blue “plotting / live” flag enters over `120ms`, and the run-button marker spins every `750ms`.
+
+Completion changes the root state to `passed`. The model traces draw over `1.25s`, the carriage settles over `700ms`, and each observation reprints from 30% scale and zero opacity over `280ms`. Point delays begin at `180ms` and advance by `16ms` per point, producing a measured left-to-right sequence. A failed state does not play the completion sequence.
+
+Under reduced motion, sweep, dashed calibration, point and row printing, panel entry and scan, code reveal, control punch, carriage calibration and settling, button spin, and copy feedback are disabled. Trace offsets and point opacity resolve immediately, the live flag changes state without transition, smooth scrolling becomes automatic, and family shortcuts activate without delay.
+
+**The State-Machine Motion Rule.** Motion must explain a real state change: calibration belongs to `running`, drawing and printing belong to `passed`, family feedback belongs to a changed selection, and copy feedback belongs to clipboard state.
 
 ### Code Proof
 
-Executed code sits in a square, deep blue-black field with pale blue text and generous internal padding. It remains visually attached to the ruled lab panel and pairs with the same compact primary action used elsewhere.
+Executed code sits in a square, deep blue-black field with pale blue text and generous internal padding. It remains visually attached to the ruled lab panel and pairs with a compact copy action. Copying compresses the button over `260ms`; success changes the label to “Copied,” turns the field system green, and confirms over `620ms`; failure changes the label to “Select code,” turns the field safety orange, and shakes it over `320ms`. Each result resets to “Copy code” after `1.2s`.
 
 ## Do's and Don'ts
 
@@ -240,7 +268,7 @@ Executed code sits in a square, deep blue-black field with pale blue text and ge
 - **Do** use one-pixel graphite rules to create hierarchy across continuous paper.
 - **Do** reserve plotting blue for the active trace, selected controls, and explicit proof emphasis.
 - **Do** use monospaced tabular figures for measurements and results.
-- **Do** preserve keyboard focus visibility and reduced-motion behavior.
+- **Do** keep running, passed, failed, family-selection, and clipboard motion tied to their semantic states, with an immediate reduced-motion path.
 - **Do** let the plotter carriage be the one realistic, shadowed signature.
 
 ### Don't:

@@ -65,6 +65,7 @@ app.innerHTML = `
           <desc id="plot-desc">Synthetic observations with ordinary least squares, polynomial, and robust regression traces.</desc>
           <g class="plot-grid" aria-hidden="true"></g>
           <g class="plot-residuals" aria-hidden="true"></g>
+          <line class="plot-sweep" x1="70" x2="70" y1="60" y2="590" aria-hidden="true"></line>
           <path class="trace trace--poly" aria-hidden="true"></path>
           <path class="trace trace--robust" aria-hidden="true"></path>
           <path class="trace trace--ols" aria-hidden="true"></path>
@@ -155,6 +156,9 @@ app.innerHTML = `
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 let currentResult: SuiteResult | undefined;
 let selectedFamily = "Regression";
+let runStartedAt = 0;
+let copyResetTimer: number | undefined;
+const minimumRunMotion = 900;
 
 function query<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -227,7 +231,10 @@ function renderPlot(result: SuiteResult): void {
     )
     .join("");
   points.innerHTML = result.plot
-    .map((point) => `<circle cx="${xScale(point.x)}" cy="${yScale(point.y)}" r="4.6" />`)
+    .map(
+      (point, index) =>
+        `<circle cx="${xScale(point.x)}" cy="${yScale(point.y)}" r="4.6" style="--point-index:${index}" />`,
+    )
     .join("");
   svg
     .querySelector<SVGPathElement>(".trace--ols")!
@@ -245,8 +252,8 @@ function renderFamily(): void {
   const checks = currentResult.checks.filter((check) => check.family === selectedFamily);
   query<HTMLTableSectionElement>("#all-checks").innerHTML = checks
     .map(
-      (check) => `
-    <tr>
+      (check, index) => `
+    <tr style="--row-index:${index}">
       <th scope="row">${escapeHtml(check.name)}</th>
       <td>${escapeHtml(check.error ?? check.value)}</td>
       <td>${format(check.duration, 2)} ms</td>
@@ -268,7 +275,27 @@ function activateFamily(family: string): void {
     tab.setAttribute("aria-selected", String(selected));
     tab.tabIndex = selected ? 0 : -1;
   }
+  for (const link of document.querySelectorAll<HTMLAnchorElement>(".family-index [data-family]")) {
+    const selected = link.dataset.family === family;
+    link.classList.toggle("is-active", selected);
+    if (selected) link.setAttribute("aria-current", "true");
+    else link.removeAttribute("aria-current");
+  }
   renderFamily();
+  const panel = query<HTMLElement>("#lab-panel");
+  panel.classList.remove("is-switching");
+  void panel.offsetWidth;
+  panel.classList.add("is-switching");
+
+  const activeTab = document.querySelector<HTMLElement>(
+    `.family-switcher [data-family="${family}"]`,
+  );
+  const activeLink = document.querySelector<HTMLElement>(`.family-index [data-family="${family}"]`);
+  for (const control of [activeTab, activeLink]) {
+    control?.classList.remove("is-activating");
+    void control?.offsetWidth;
+    control?.classList.add("is-activating");
+  }
 }
 
 function familyFromHash(): string | undefined {
@@ -336,6 +363,8 @@ function runSuite(): void {
   const button = query<HTMLButtonElement>("#run-suite");
   button.disabled = true;
   button.classList.add("is-running");
+  document.documentElement.dataset.suite = "running";
+  runStartedAt = performance.now();
   button.querySelector("span")?.setAttribute("aria-hidden", "true");
   query<HTMLElement>("#api-count").textContent = "0 / 36 APIs";
   query<HTMLElement>("#failed-count").textContent = "running";
@@ -350,9 +379,11 @@ worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
     return;
   }
   if (message.type === "complete") {
-    renderResult(message.result);
+    const remainingMotion = Math.max(0, minimumRunMotion - (performance.now() - runStartedAt));
+    window.setTimeout(() => renderResult(message.result), remainingMotion);
     return;
   }
+  document.documentElement.dataset.suite = "failed";
   query<HTMLElement>("#failed-count").textContent = "suite error";
   query<HTMLElement>("#failed-count").classList.add("has-failures");
   query<HTMLElement>("#residual-note").textContent = `${message.error}. Run the suite again.`;
@@ -379,13 +410,14 @@ for (const tab of document.querySelectorAll<HTMLButtonElement>("[role=tab]")) {
   });
 }
 
-for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-family]")) {
+for (const link of document.querySelectorAll<HTMLAnchorElement>(".family-index a[data-family]")) {
   link.addEventListener("click", (event) => {
     event.preventDefault();
     const family = link.dataset.family ?? "Regression";
-    activateFamily(family);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     history.pushState(null, "", `#lab/${family.toLowerCase()}`);
-    query<HTMLElement>("#labs").scrollIntoView({ behavior: "smooth" });
+    query<HTMLElement>("#labs").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
+    window.setTimeout(() => activateFamily(family), reducedMotion ? 0 : 450);
   });
 }
 
@@ -396,13 +428,31 @@ window.addEventListener("hashchange", () => {
 
 query<HTMLButtonElement>("#copy-code").addEventListener("click", async () => {
   const code = query<HTMLElement>("#example-code").textContent ?? "";
+  const button = query<HTMLButtonElement>("#copy-code");
+  window.clearTimeout(copyResetTimer);
+  button.textContent = "Copying";
+  button.classList.remove("is-error", "is-copied", "is-copying");
+  void button.offsetWidth;
+  button.classList.add("is-copying");
   try {
     await navigator.clipboard.writeText(code);
     query<HTMLElement>("#copy-status").textContent = "Code copied.";
+    button.textContent = "Copied";
+    button.classList.remove("is-error", "is-copied", "is-copying");
+    void button.offsetWidth;
+    button.classList.add("is-copied");
   } catch {
     query<HTMLElement>("#copy-status").textContent =
       "Clipboard unavailable. Select the code to copy it.";
+    button.textContent = "Try again";
+    button.classList.remove("is-copied", "is-error", "is-copying");
+    void button.offsetWidth;
+    button.classList.add("is-error");
   }
+  copyResetTimer = window.setTimeout(() => {
+    button.textContent = "Copy code";
+    button.classList.remove("is-copied", "is-error", "is-copying");
+  }, 1_200);
 });
 
 activateFamily(familyFromHash() ?? "Regression");

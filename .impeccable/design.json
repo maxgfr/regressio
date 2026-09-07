@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-07T14:08:43Z",
+  "generatedAt": "2026-09-07T14:53:22Z",
   "title": "Design System: regressio",
   "extensions": {
     "colorMeta": {
@@ -15,6 +15,12 @@
         "displayName": "Light Plotting Blue",
         "canonical": "#94a9eb",
         "tonalRamp": ["oklch(15% 0.1 265)", "oklch(25% 0.1 265)", "oklch(35% 0.1 265)", "oklch(45% 0.1 265)", "oklch(58% 0.1 265)", "oklch(70% 0.1 265)", "oklch(82% 0.1 265)", "oklch(95% 0.1 265)"]
+      },
+      "system-green": {
+        "role": "secondary",
+        "displayName": "System Green",
+        "canonical": "#16702a",
+        "tonalRamp": ["oklch(15% 0.12 145)", "oklch(25% 0.12 145)", "oklch(35% 0.12 145)", "oklch(45% 0.12 145)", "oklch(58% 0.12 145)", "oklch(70% 0.12 145)", "oklch(82% 0.12 145)", "oklch(95% 0.12 145)"]
       },
       "safety-orange": {
         "role": "tertiary",
@@ -71,9 +77,25 @@
       { "name": "plotter-contact", "value": "drop-shadow(0 8px 7px rgba(23, 25, 22, 0.18))", "purpose": "Places the transparent carriage physically above the primary plot." }
     ],
     "motion": [
+      { "name": "run-cycle-minimum", "value": "900ms", "purpose": "Keeps the root in the running state long enough for the calibration sweep to complete before passed or failed is shown." },
+      { "name": "plotting-live-enter", "value": "120ms ease", "purpose": "Reveals the plotting/live flag through opacity and a 0.4rem upward move while the suite is running." },
+      { "name": "plot-sweep", "value": "900ms linear both", "purpose": "Moves a one-pixel blue calibration line 880px across the graph during the running state." },
+      { "name": "robust-calibrate", "value": "220ms linear infinite", "purpose": "Advances the robust trace dash offset while the suite is running." },
+      { "name": "carriage-calibrate", "value": "160ms ease-in-out infinite alternate", "purpose": "Oscillates the carriage by two pixels and shifts its contact shadow toward plotting blue during the running state." },
       { "name": "trace-draw", "value": "1.25s cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Draws a completed model trace from its dashed offset." },
       { "name": "carriage-settle", "value": "700ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Settles the carriage after a successful suite run." },
-      { "name": "running-spin", "value": "0.75s linear infinite", "purpose": "Turns the action marker into a running indicator; removed under reduced motion." }
+      { "name": "point-print", "value": "280ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Reprints completed plot points from 30% scale and zero opacity, delayed by calc(var(--point-index) * 16ms + 180ms)." },
+      { "name": "control-punch", "value": "480ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Compresses the selected tab and family link to 96% between a raised-paper inset and plotting-blue outer rule." },
+      { "name": "lab-enter", "value": "520ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Brings refreshed family evidence in from 0.6rem below and 25% opacity." },
+      { "name": "panel-scan", "value": "680ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Sweeps a narrow plotting-blue registration band across the refreshed lab panel." },
+      { "name": "row-print", "value": "360ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Prints result rows from 1.25rem left, delayed by calc(var(--row-index) * 36ms + 120ms)." },
+      { "name": "code-print", "value": "560ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Reveals the refreshed code field from left to right with clip-path." },
+      { "name": "family-shortcut-delay", "value": "450ms", "purpose": "Defers family activation until the smooth scroll reaches the labs; reduced motion uses zero delay." },
+      { "name": "copy-press", "value": "260ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Compresses the copy action to 94% while the clipboard write is pending." },
+      { "name": "copy-confirm", "value": "620ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Raises the successful copy action by two pixels with a soft system-green confirmation ring." },
+      { "name": "copy-error", "value": "320ms ease-in-out", "purpose": "Shakes the failed copy action by three pixels while safety orange and recovery text identify the error." },
+      { "name": "running-spin", "value": "0.75s linear infinite", "purpose": "Turns the action marker into a running indicator." },
+      { "name": "reduced-motion-policy", "value": "animation: none; transition: none; scroll-behavior: auto", "purpose": "Disables run, plot, carriage, point, control, panel, row, code, and copy motion; resolves trace offsets, point visibility, state transitions, scrolling, and shortcut activation immediately." }
     ],
     "breakpoints": [
       { "name": "stack", "value": "900px" },
@@ -87,15 +109,29 @@
       "refersTo": "button-primary",
       "description": "Compact mechanical action for running the suite or copying code.",
       "html": "<button class=\"ds-btn-primary\" type=\"button\"><span class=\"ds-btn-primary__mark\" aria-hidden=\"true\"></span>Run suite</button>",
-      "css": ".ds-btn-primary { display:inline-flex; align-items:center; gap:.55rem; border:1px solid var(--graphite); border-radius:0; padding:.65rem .85rem; color:var(--paper-raised); background:var(--graphite); font:800 .7rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-btn-primary__mark { width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid currentColor; } .ds-btn-primary:hover { background:var(--ink); border-color:var(--ink); } .ds-btn-primary:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-btn-primary:active { transform:translateY(1px); } .ds-btn-primary:disabled { cursor:progress; opacity:.65; }"
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; gap:.55rem; border:1px solid var(--graphite); border-radius:0; padding:.65rem .85rem; color:var(--paper-raised); background:var(--graphite); font:800 .7rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-btn-primary__mark { width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid currentColor; } .ds-btn-primary:hover { background:var(--ink); border-color:var(--ink); } .ds-btn-primary:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-btn-primary:active { transform:translateY(1px); } .ds-btn-primary:disabled { cursor:progress; opacity:.65; } .ds-btn-primary.is-running .ds-btn-primary__mark { width:10px; height:10px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:ds-running-spin .75s linear infinite; } @keyframes ds-running-spin { to { transform:rotate(360deg); } } @media (prefers-reduced-motion:reduce) { .ds-btn-primary.is-running .ds-btn-primary__mark { animation:none; } }"
     },
     {
       "name": "Family Tab",
       "kind": "chip",
       "refersTo": "tab-family",
-      "description": "A ruled family selector that becomes plotting blue when selected.",
-      "html": "<button class=\"ds-family-tab\" type=\"button\" aria-selected=\"true\">Regression</button>",
-      "css": ".ds-family-tab { min-width:9rem; min-height:3.5rem; border:0; border-right:1px solid var(--rule-strong); border-radius:0; color:var(--graphite); background:transparent; box-shadow:inset 0 0 0 1px var(--rule-strong); font:800 .75rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-family-tab:hover { color:var(--ink); } .ds-family-tab[aria-selected=\"true\"] { color:var(--paper-raised); background:var(--ink); } .ds-family-tab:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-family-tab:active { filter:brightness(.92); }"
+      "description": "A ruled family selector that becomes plotting blue when selected and triggers the evidence-panel entrance.",
+      "html": "<button class=\"ds-family-tab is-activating\" type=\"button\" aria-selected=\"true\">Regression</button>",
+      "css": ".ds-family-tab { min-width:9rem; min-height:3.5rem; border:0; border-right:1px solid var(--rule-strong); border-radius:0; color:var(--graphite); background:transparent; box-shadow:inset 0 0 0 1px var(--rule-strong); font:800 .75rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-family-tab:hover { color:var(--ink); } .ds-family-tab[aria-selected=\"true\"] { color:var(--paper-raised); background:var(--ink); } .ds-family-tab.is-activating { animation:ds-control-punch 480ms cubic-bezier(.16, 1, .3, 1) both; } .ds-family-tab:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-family-tab:active { filter:brightness(.92); } @keyframes ds-control-punch { 0% { box-shadow:inset 0 0 0 1px var(--rule-strong); transform:scale(1); } 35% { box-shadow:inset 0 0 0 3px var(--paper-raised), 0 0 0 3px var(--ink); transform:scale(.96); } 100% { box-shadow:inset 0 0 0 1px var(--rule-strong); transform:scale(1); } } @media (prefers-reduced-motion:reduce) { .ds-family-tab.is-activating { animation:none; } }"
+    },
+    {
+      "name": "Family Index Link",
+      "kind": "nav",
+      "description": "A ruled navigation cell synchronized to the selected lab family through its active class and aria-current.",
+      "html": "<a class=\"ds-family-link is-active is-activating\" href=\"#lab/regression\" aria-current=\"true\">Regression</a>",
+      "css": ".ds-family-link { display:flex; min-width:9rem; min-height:3.5rem; align-items:center; justify-content:center; padding:.75rem .35rem; border:1px solid var(--rule-strong); color:var(--graphite); background:var(--paper); font:800 clamp(.7rem, .74vw, .8rem)/1 var(--sans); letter-spacing:.1em; text-decoration:none; text-transform:uppercase; } .ds-family-link:hover, .ds-family-link.is-active { color:var(--paper-raised); background:var(--ink); } .ds-family-link.is-activating { animation:ds-control-punch 480ms cubic-bezier(.16, 1, .3, 1) both; } .ds-family-link:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } .ds-family-link:active { filter:brightness(.92); } @keyframes ds-control-punch { 0% { box-shadow:inset 0 0 0 1px var(--rule-strong); transform:scale(1); } 35% { box-shadow:inset 0 0 0 3px var(--paper-raised), 0 0 0 3px var(--ink); transform:scale(.96); } 100% { box-shadow:inset 0 0 0 1px var(--rule-strong); transform:scale(1); } } @media (prefers-reduced-motion:reduce) { .ds-family-link.is-activating { animation:none; } }"
+    },
+    {
+      "name": "Family Evidence Panel",
+      "kind": "custom",
+      "description": "The ruled table-and-code panel re-enters whenever the selected family changes.",
+      "html": "<section class=\"ds-lab-panel is-switching\"><div class=\"ds-lab-readout\"><table><tbody><tr style=\"--row-index:0\"><td>LinearRegression</td><td>PASS</td></tr><tr style=\"--row-index:1\"><td>RidgeRegression</td><td>PASS</td></tr></tbody></table></div><pre><code>model.fit(X, y)</code></pre></section>",
+      "css": ".ds-lab-panel { position:relative; display:grid; grid-template-columns:minmax(0, 1.35fr) minmax(20rem, .65fr); min-height:12rem; overflow:hidden; border-bottom:1px solid var(--graphite); color:var(--graphite); background:var(--paper); } .ds-lab-panel::after { content:\"\"; position:absolute; z-index:5; inset:0; background:linear-gradient(90deg, transparent 0 46%, rgba(18,57,197,.08) 48%, var(--ink) 50%, rgba(18,57,197,.08) 52%, transparent 54% 100%); pointer-events:none; opacity:0; transform:translateX(-100%); } .ds-lab-panel>div, .ds-lab-panel>pre { margin:0; padding:1.5rem; } .ds-lab-readout table { width:100%; border-collapse:collapse; font:400 .75rem/1.45 var(--mono); } .ds-lab-readout td { padding:.5rem; border-bottom:1px solid var(--rule); } .ds-lab-panel>pre { border-left:1px solid var(--graphite); color:#dce2ff; background:#161b30; font:400 .8rem/1.45 var(--mono); } .ds-lab-panel.is-switching { animation:ds-lab-enter 520ms cubic-bezier(.16, 1, .3, 1) both; } .ds-lab-panel.is-switching::after { animation:ds-panel-scan 680ms cubic-bezier(.4, 0, .2, 1) both; } .ds-lab-panel.is-switching .ds-lab-readout tbody tr { animation:ds-row-print 360ms cubic-bezier(.16, 1, .3, 1) both; animation-delay:calc(var(--row-index) * 36ms + 120ms); } .ds-lab-panel.is-switching>pre { animation:ds-code-print 560ms cubic-bezier(.16, 1, .3, 1) both; } .ds-lab-panel:hover { border-bottom-color:var(--ink); } .ds-lab-panel:focus-within { outline:3px solid var(--orange); outline-offset:4px; } @keyframes ds-lab-enter { from { opacity:.25; transform:translateY(.6rem); } to { opacity:1; transform:translateY(0); } } @keyframes ds-panel-scan { 0% { opacity:0; transform:translateX(-100%); } 20%, 78% { opacity:1; } 100% { opacity:0; transform:translateX(100%); } } @keyframes ds-row-print { from { opacity:0; transform:translateX(-1.25rem); } to { opacity:1; transform:translateX(0); } } @keyframes ds-code-print { from { opacity:.2; clip-path:inset(0 100% 0 0); } to { opacity:1; clip-path:inset(0); } } @media (prefers-reduced-motion:reduce) { .ds-lab-panel.is-switching, .ds-lab-panel.is-switching::after, .ds-lab-panel.is-switching .ds-lab-readout tbody tr, .ds-lab-panel.is-switching>pre { animation:none; } }"
     },
     {
       "name": "Proof Readout",
@@ -120,6 +156,14 @@
       "css": ".ds-plot-legend { display:flex; flex-direction:column; gap:.65rem; padding:.65rem; color:var(--ink); background:var(--paper); font:400 .75rem/1.35 var(--sans); text-transform:uppercase; } .ds-plot-legend>div { display:grid; grid-template-columns:1.2rem 6rem 1fr; gap:.35rem; align-items:center; } .ds-plot-legend code { color:var(--ink); font:400 .75rem/1.35 var(--mono); text-transform:none; } .ds-key { display:block; height:2px; background:var(--ink); } .ds-key--poly { background:var(--ink-light); } .ds-key--robust { height:1px; background:repeating-linear-gradient(to right, var(--graphite) 0 6px, transparent 6px 10px); } .ds-plot-legend:hover { color:var(--graphite); } .ds-plot-legend:focus-within { outline:3px solid var(--orange); outline-offset:4px; }"
     },
     {
+      "name": "Copy Action",
+      "kind": "button",
+      "refersTo": "button-copy-success",
+      "description": "Clipboard action with distinct pending, confirmed, and recoverable-error feedback that resets after 1.2 seconds.",
+      "html": "<button class=\"ds-copy-action is-copied\" type=\"button\">Copied</button>",
+      "css": ".ds-copy-action { display:inline-flex; align-items:center; border:1px solid var(--graphite); border-radius:0; padding:.45rem .7rem; color:var(--paper-raised); background:var(--graphite); font:800 .7rem/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; } .ds-copy-action:hover { background:var(--ink); border-color:var(--ink); } .ds-copy-action.is-copying { animation:ds-copy-press 260ms cubic-bezier(.16, 1, .3, 1) both; } .ds-copy-action.is-copied { animation:ds-copy-confirm 620ms cubic-bezier(.16, 1, .3, 1) both; background:#16702a; border-color:#16702a; } .ds-copy-action.is-error { animation:ds-copy-error 320ms ease-in-out both; background:var(--orange); border-color:var(--orange); } .ds-copy-action:focus-visible { outline:3px solid var(--orange); outline-offset:4px; } @keyframes ds-copy-confirm { 35% { box-shadow:0 0 0 .45rem rgba(22,112,42,.18); transform:translateY(-2px); } } @keyframes ds-copy-press { 50% { box-shadow:inset 0 0 0 3px var(--paper-raised); transform:scale(.94); } } @keyframes ds-copy-error { 25%, 75% { transform:translateX(-3px); } 50% { transform:translateX(3px); } } @media (prefers-reduced-motion:reduce) { .ds-copy-action.is-copying, .ds-copy-action.is-copied, .ds-copy-action.is-error { animation:none; } }"
+    },
+    {
       "name": "Code Proof",
       "kind": "custom",
       "description": "Executed browser code shown as the sole dark evidence field in the lab.",
@@ -136,7 +180,8 @@
       "Safety orange reserved for failures and the keyboard focus ring.",
       "Condensed sans-serif hierarchy paired with tabular monospaced evidence.",
       "Registration marks, calibration ticks, ruled tabs, and plots without card shells.",
-      "A single plotter carriage supplies the system's realistic material accent."
+      "A single plotter carriage supplies the system's realistic material accent.",
+      "State-driven motion separates calibration, proof drawing, and family inspection."
     ],
     "rules": [
       { "name": "The One Ink Rule", "body": "Plotting blue carries the active trace and current selection; keep it scarce enough that the live result remains the clearest blue object.", "section": "colors" },
@@ -147,14 +192,15 @@
       { "name": "The Dominant Plot Rule", "body": "On wide screens, reserve roughly four-fifths of the proof sheet for the drawing field and one-fifth for vertically aligned evidence.", "section": "layout" },
       { "name": "The Stack Without Cards Rule", "body": "Responsive layouts preserve ruled continuity by stacking the same regions and borders; they do not turn those regions into detached cards.", "section": "layout" },
       { "name": "The One Physical Object Rule", "body": "Realistic depth belongs to the plotter carriage; all interface surfaces remain flat and ruled.", "section": "elevation" },
-      { "name": "The Instrument Geometry Rule", "body": "Use straight edges for information and circles for instrument state or calibration details.", "section": "shapes" }
+      { "name": "The Instrument Geometry Rule", "body": "Use straight edges for information and circles for instrument state or calibration details.", "section": "shapes" },
+      { "name": "The State-Machine Motion Rule", "body": "Motion must explain a real state change: calibration belongs to `running`, drawing and printing belong to `passed`, family feedback belongs to a changed selection, and copy feedback belongs to clipboard state.", "section": "components" }
     ],
     "dos": [
       "Do keep evidence visible: pair claims with live values, equations, timings, or status.",
       "Do use one-pixel graphite rules to create hierarchy across continuous paper.",
       "Do reserve plotting blue for the active trace, selected controls, and explicit proof emphasis.",
       "Do use monospaced tabular figures for measurements and results.",
-      "Do preserve keyboard focus visibility and reduced-motion behavior.",
+      "Do keep running, passed, failed, family-selection, and clipboard motion tied to their semantic states, with an immediate reduced-motion path.",
       "Do let the plotter carriage be the one realistic, shadowed signature."
     ],
     "donts": [
