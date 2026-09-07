@@ -40,7 +40,7 @@
     "typecheck:site": "tsc -p site/tsconfig.json",
     "lint": "biome check src tests site/src site/tests",
     "lint:fix": "biome check --write src tests site/src site/tests",
-    "check": "bun run lint && bun run test && bun run build:site && bun run typecheck:site && bun run test:site",
+    "check": "bun run lint && bun run build:site && bun run typecheck:site && bun run test && bun run test:site",
     "release": "semantic-release"
   },
   "keywords": [
