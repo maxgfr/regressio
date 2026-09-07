@@ -26,7 +26,7 @@ jobs:
       - run: bun run lint
       - run: bun run build
       - run: bun run typecheck:site
-      - run: bun test
+      - run: bun run test
       - run: bun run test:site
 
   release:
