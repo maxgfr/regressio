@@ -1,4 +1,5 @@
-import type { DataInput, DataMatrix, DataVector } from "../types";
+import type { DataInput, DataVector } from "../types";
+import { normalizeModelInput, validateFeatureCount, validateTargets } from "./input-validation";
 
 export type ActivationFunction = "relu" | "sigmoid" | "tanh" | "linear" | "softmax";
 
@@ -40,6 +41,7 @@ export class NeuralNetwork {
   private _fitted = false;
   private _outputSize = 0;
   private _classes: number[] = [];
+  private _nFeatures = 0;
 
   constructor(options: NeuralNetworkOptions) {
     this._learningRate = options.learningRate ?? 0.01;
@@ -85,12 +87,11 @@ export class NeuralNetwork {
   }
 
   fit(X: DataInput, y: DataVector): this {
-    const Xmat = this.normalizeInput(X);
-    if (Xmat.length !== y.length) {
-      throw new Error(`X has ${Xmat.length} rows but y has ${y.length} elements`);
-    }
+    const Xmat = normalizeModelInput(X);
+    validateTargets(y, Xmat.length);
 
     const inputSize = Xmat[0]!.length;
+    this._nFeatures = inputSize;
     const n = Xmat.length;
 
     if (this._task === "classification") {
@@ -130,7 +131,8 @@ export class NeuralNetwork {
 
   predict(X: DataInput): DataVector {
     if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
-    const Xmat = this.normalizeInput(X);
+    const Xmat = normalizeModelInput(X);
+    validateFeatureCount(Xmat, this._nFeatures);
 
     return Xmat.map((row) => {
       const activations = this.forward(row);
@@ -155,7 +157,8 @@ export class NeuralNetwork {
   /** Return raw output (probabilities for classification, values for regression). */
   predictRaw(X: DataInput): number[][] {
     if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
-    const Xmat = this.normalizeInput(X);
+    const Xmat = normalizeModelInput(X);
+    validateFeatureCount(Xmat, this._nFeatures);
     return Xmat.map((row) => {
       const activations = this.forward(row);
       return Array.from(activations[activations.length - 1]!);
@@ -299,13 +302,5 @@ export class NeuralNetwork {
     const idx = this._classes.indexOf(y);
     if (idx >= 0) encoded[idx] = 1;
     return encoded;
-  }
-
-  private normalizeInput(X: DataInput): DataMatrix {
-    if (X.length === 0) throw new Error("Input data cannot be empty");
-    if (typeof X[0] === "number") {
-      return (X as number[]).map((v) => [v]);
-    }
-    return X as DataMatrix;
   }
 }

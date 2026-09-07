@@ -1,6 +1,7 @@
 import { engineSoftmaxRows } from "../core/engine";
 import { Matrix } from "../core/matrix";
 import type { DataInput, DataMatrix, DataVector } from "../types";
+import { normalizeModelInput, validateFeatureCount, validateTargets } from "./input-validation";
 
 export interface MulticlassLogisticOptions {
   /** Whether to fit an intercept term (default: true). */
@@ -41,6 +42,7 @@ export class MulticlassLogisticRegression {
 
   private _X: DataMatrix = [];
   private _y: DataVector = [];
+  private _nFeatures = 0;
 
   constructor(options: MulticlassLogisticOptions = {}) {
     this._fitIntercept = options.fitIntercept ?? true;
@@ -68,10 +70,9 @@ export class MulticlassLogisticRegression {
   }
 
   fit(X: DataInput, y: DataVector): this {
-    const Xmat = this.normalizeInput(X);
-    if (Xmat.length !== y.length) {
-      throw new Error(`X has ${Xmat.length} rows but y has ${y.length} elements`);
-    }
+    const Xmat = normalizeModelInput(X);
+    validateTargets(y, Xmat.length);
+    this._nFeatures = Xmat[0]!.length;
 
     this._X = Xmat;
     this._y = y;
@@ -162,7 +163,8 @@ export class MulticlassLogisticRegression {
   /** Predict class probabilities: returns array of probability vectors. */
   predictProbability(X: DataInput): number[][] {
     if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
-    const Xmat = this.normalizeInput(X);
+    const Xmat = normalizeModelInput(X);
+    validateFeatureCount(Xmat, this._nFeatures);
     const Xdesign = this._fitIntercept ? Xmat.map((row) => [1, ...row]) : Xmat;
     const XMat = Matrix.fromArray(Xdesign);
     const scores = XMat.multiply(this._weights);
@@ -222,13 +224,5 @@ export class MulticlassLogisticRegression {
       nClasses: K,
       logLikelihood: logLik,
     };
-  }
-
-  private normalizeInput(X: DataInput): DataMatrix {
-    if (X.length === 0) throw new Error("Input data cannot be empty");
-    if (typeof X[0] === "number") {
-      return (X as number[]).map((v) => [v]);
-    }
-    return X as DataMatrix;
   }
 }

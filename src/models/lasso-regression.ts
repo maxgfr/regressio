@@ -42,8 +42,7 @@ export class LassoRegression extends BaseRegression {
     if (wasmResult) {
       this._intercept = wasmResult[0]!;
       this._coefficients = Array.from(wasmResult.slice(1));
-      this._yHat = this.predict(Xmat);
-      this._fitted = true;
+      this.completeFit(Xmat);
       return this;
     }
 
@@ -97,8 +96,7 @@ export class LassoRegression extends BaseRegression {
       ? yMean - this._coefficients.reduce((sum, bj, j) => sum + bj * xMeans[j]!, 0)
       : 0;
 
-    this._yHat = this.predict(Xmat);
-    this._fitted = true;
+    this.completeFit(Xmat);
     return this;
   }
 
@@ -107,14 +105,7 @@ export class LassoRegression extends BaseRegression {
   }
 
   predict(X: DataInput): DataVector {
-    const Xmat = this.normalizeInput(X);
-    return Xmat.map((row) => {
-      let sum = this._intercept;
-      for (let j = 0; j < this._coefficients.length; j++) {
-        sum += row[j]! * this._coefficients[j]!;
-      }
-      return sum;
-    });
+    return this.predictLinearRows(this.validatePredictInput(X));
   }
 
   protected coordinateUpdate(rho: number, colNormSq: number, n: number, _j: number): number {

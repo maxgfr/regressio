@@ -1,5 +1,11 @@
 import { engineEuclideanDistances, engineManhattanDistances } from "../core/engine";
 import type { DataInput, DataMatrix, DataVector } from "../types";
+import {
+  normalizeModelInput,
+  validateFeatureCount,
+  validateFeatureVector,
+  validateTargets,
+} from "./input-validation";
 
 export interface KNNOptions {
   /** Number of neighbors (default: 5). */
@@ -21,6 +27,7 @@ export class KNearestNeighbors {
   private _fitted = false;
   private _X: DataMatrix = [];
   private _y: DataVector = [];
+  private _nFeatures = 0;
 
   constructor(options: KNNOptions = {}) {
     this._k = options.k ?? 5;
@@ -29,22 +36,22 @@ export class KNearestNeighbors {
   }
 
   fit(X: DataInput, y: DataVector): this {
-    const Xmat = this.normalizeInput(X);
-    if (Xmat.length !== y.length) {
-      throw new Error(`X has ${Xmat.length} rows but y has ${y.length} elements`);
-    }
+    const Xmat = normalizeModelInput(X);
+    validateTargets(y, Xmat.length);
     if (Xmat.length < this._k) {
       throw new Error(`Need at least k=${this._k} samples, got ${Xmat.length}`);
     }
     this._X = Xmat;
     this._y = y;
+    this._nFeatures = Xmat[0]!.length;
     this._fitted = true;
     return this;
   }
 
   predict(X: DataInput): DataVector {
     if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
-    const Xmat = this.normalizeInput(X);
+    const Xmat = normalizeModelInput(X);
+    validateFeatureCount(Xmat, this._nFeatures);
 
     // WASM batch path — compute all distances at once
     const dim = this._X[0]!.length;
@@ -81,6 +88,7 @@ export class KNearestNeighbors {
   /** Return the k nearest neighbor indices for a single point. */
   neighbors(point: number[]): number[] {
     if (!this._fitted) throw new Error("Model has not been fitted. Call fit() first.");
+    validateFeatureVector(point, this._nFeatures);
     return this.findNeighbors(point).map((n) => n.index);
   }
 
@@ -134,13 +142,5 @@ export class KNearestNeighbors {
       }
     }
     return this._distance === "manhattan" ? sum : Math.sqrt(sum);
-  }
-
-  private normalizeInput(X: DataInput): DataMatrix {
-    if (X.length === 0) throw new Error("Input data cannot be empty");
-    if (typeof X[0] === "number") {
-      return (X as number[]).map((v) => [v]);
-    }
-    return X as DataMatrix;
   }
 }

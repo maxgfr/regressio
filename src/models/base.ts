@@ -8,12 +8,14 @@ import type {
   DataVector,
   RegressionStatistics,
 } from "../types";
+import { normalizeModelInput, validateFeatureCount, validateTargets } from "./input-validation";
 
 export abstract class BaseRegression {
   protected _coefficients: number[] = [];
   protected _intercept = 0;
   protected _fitted = false;
   protected _fitIntercept: boolean;
+  protected _nFeatures = 0;
 
   protected _X: DataMatrix = [];
   protected _y: DataVector = [];
@@ -195,12 +197,7 @@ export abstract class BaseRegression {
   // -------------------------------------------------------------------------
 
   protected normalizeInput(X: DataInput): DataMatrix {
-    if (X.length === 0) throw new Error("Input data cannot be empty");
-    if (typeof X[0] === "number") {
-      // 1D → 2D: each element becomes a single-column row
-      return (X as number[]).map((v) => [v]);
-    }
-    return X as DataMatrix;
+    return normalizeModelInput(X);
   }
 
   protected addInterceptColumn(X: DataMatrix): DataMatrix {
@@ -208,10 +205,31 @@ export abstract class BaseRegression {
   }
 
   protected validateFitInput(X: DataMatrix, y: DataVector): void {
-    if (X.length !== y.length) {
-      throw new Error(`X has ${X.length} rows but y has ${y.length} elements`);
-    }
-    if (X.length === 0) throw new Error("Input data cannot be empty");
+    validateTargets(y, X.length);
+    this._nFeatures = X[0]!.length;
+  }
+
+  protected validatePredictInput(X: DataInput): DataMatrix {
+    this.assertFitted();
+    const Xmat = this.normalizeInput(X);
+    validateFeatureCount(Xmat, this._nFeatures);
+    return Xmat;
+  }
+
+  protected predictLinearRows(X: DataMatrix): DataVector {
+    return X.map((row) => {
+      let sum = this._intercept;
+      for (let j = 0; j < this._coefficients.length; j++) {
+        sum += row[j]! * this._coefficients[j]!;
+      }
+      return sum;
+    });
+  }
+
+  protected completeFit(X: DataMatrix, statisticsX: DataMatrix = X): void {
+    this._fitted = true;
+    this._yHat = this.predict(X);
+    this._X = statisticsX;
   }
 
   protected assertFitted(): void {
