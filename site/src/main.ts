@@ -115,9 +115,6 @@ app.innerHTML = `
         </div>
       </aside>
 
-      <nav class="r-family-index family-index" aria-label="API families">
-        <ul>${families.map((family) => `<li><a href="#labs" data-family="${family}">${family}</a></li>`).join("")}</ul>
-      </nav>
       <div class="registration registration--bottom" aria-hidden="true"></div>
     </section>
 
@@ -267,7 +264,7 @@ function renderFamily(): void {
   panel.setAttribute("aria-labelledby", `tab-${selectedFamily.toLowerCase()}`);
 }
 
-function activateFamily(family: string): void {
+function activateFamily(family: string, animate = true): void {
   if (!families.includes(family)) return;
   selectedFamily = family;
   for (const tab of document.querySelectorAll<HTMLButtonElement>("[role=tab]")) {
@@ -275,26 +272,19 @@ function activateFamily(family: string): void {
     tab.setAttribute("aria-selected", String(selected));
     tab.tabIndex = selected ? 0 : -1;
   }
-  for (const link of document.querySelectorAll<HTMLAnchorElement>(".family-index [data-family]")) {
-    const selected = link.dataset.family === family;
-    link.classList.toggle("is-active", selected);
-    if (selected) link.setAttribute("aria-current", "true");
-    else link.removeAttribute("aria-current");
-  }
   renderFamily();
-  const panel = query<HTMLElement>("#lab-panel");
-  panel.classList.remove("is-switching");
-  void panel.offsetWidth;
-  panel.classList.add("is-switching");
+  if (animate) {
+    const panel = query<HTMLElement>("#lab-panel");
+    panel.classList.remove("is-switching");
+    void panel.offsetWidth;
+    panel.classList.add("is-switching");
 
-  const activeTab = document.querySelector<HTMLElement>(
-    `.family-switcher [data-family="${family}"]`,
-  );
-  const activeLink = document.querySelector<HTMLElement>(`.family-index [data-family="${family}"]`);
-  for (const control of [activeTab, activeLink]) {
-    control?.classList.remove("is-activating");
-    void control?.offsetWidth;
-    control?.classList.add("is-activating");
+    const activeTab = document.querySelector<HTMLElement>(
+      `.family-switcher [data-family="${family}"]`,
+    );
+    activeTab?.classList.remove("is-activating");
+    void activeTab?.offsetWidth;
+    activeTab?.classList.add("is-activating");
   }
 }
 
@@ -410,17 +400,6 @@ for (const tab of document.querySelectorAll<HTMLButtonElement>("[role=tab]")) {
   });
 }
 
-for (const link of document.querySelectorAll<HTMLAnchorElement>(".family-index a[data-family]")) {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    const family = link.dataset.family ?? "Regression";
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    history.pushState(null, "", `#lab/${family.toLowerCase()}`);
-    query<HTMLElement>("#labs").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" });
-    window.setTimeout(() => activateFamily(family), reducedMotion ? 0 : 450);
-  });
-}
-
 window.addEventListener("hashchange", () => {
   const family = familyFromHash();
   if (family) activateFamily(family);
@@ -455,5 +434,5 @@ query<HTMLButtonElement>("#copy-code").addEventListener("click", async () => {
   }, 1_200);
 });
 
-activateFamily(familyFromHash() ?? "Regression");
+activateFamily(familyFromHash() ?? "Regression", false);
 runSuite();

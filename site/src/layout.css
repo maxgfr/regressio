@@ -94,10 +94,6 @@
   --r-proof-table-h: 30.000%;
   --r-proof-table-cap: 7px;
   --r-proof-table-font: 11px;
-  --r-family-index-x: 0.000%;
-  --r-family-index-y: 90.000%;
-  --r-family-index-w: 100.000%;
-  --r-family-index-h: 10.000%;
 }
 
 .comp-frame {
@@ -231,11 +227,4 @@
   top: var(--r-proof-table-y);
   width: var(--r-proof-table-w);
   height: var(--r-proof-table-h);
-}
-.r-family-index {
-  position: absolute;
-  left: var(--r-family-index-x);
-  top: var(--r-family-index-y);
-  width: var(--r-family-index-w);
-  height: var(--r-family-index-h);
 }

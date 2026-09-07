@@ -183,7 +183,7 @@ The palette reads like drafting media: near-white paper, low-chroma graphite and
 
 ## Layout
 
-The wide proof sheet uses a measured 80/20 composition: the unboxed plot occupies the dominant field and the proof rail aligns vertically at the right. A narrow instrument rail spans the top, while a six-part ruled family index closes the sheet. The labs continue the same sheet logic with a roughly two-thirds results table and one-third code proof.
+The wide proof sheet uses a measured 80/20 composition: the unboxed plot occupies the dominant field and the proof rail aligns vertically at the right. A narrow instrument rail spans the top. The labs continue the same sheet logic with one six-part family selector above a roughly two-thirds results table and one-third code proof.
 
 Spacing follows a compact instrument rhythm for labels and controls, then opens sharply around the large lab statement. The recurring scale runs from an extra-small inline gap through compact control padding, one-rem partitions, one-and-a-half-rem section padding, and three-rem major gaps.
 
@@ -223,8 +223,8 @@ Controls, code fields, proof blocks, and tabs use square corners. Fine one-pixel
 ### Tabs
 
 - **Style:** family choices form one continuous ruled row, with square cells, uppercase condensed labels, and a minimum height of `3.5rem`.
-- **State:** the selected tab becomes solid plotting blue with raised-paper text; the matching family-index link receives the same filled active treatment and `aria-current`, while hover changes the label to blue before selection.
-- **Activation:** the selected tab and matching family-index link replay a `480ms` control punch, compressing briefly to 96% scale between a raised-paper inset and blue outer rule.
+- **State:** the selected tab becomes solid plotting blue with raised-paper text, while hover changes the label to blue before selection.
+- **Activation:** every selected tab replays a `480ms` control punch, compressing briefly to 96% scale between a raised-paper inset and blue outer rule.
 - **Panel Transition:** changing families replays a `520ms` fast-out entrance from `0.6rem` below and 25% opacity. A blue scan crosses the panel over `680ms`; rows print from `1.25rem` left over `360ms`, delayed by `120ms` plus `36ms` per row; the code field reveals from left to right over `560ms`.
 - **Responsive:** six columns become three at the medium breakpoint and two on small screens.
 
@@ -235,10 +235,6 @@ Controls, code fields, proof blocks, and tabs use square corners. Fine one-pixel
 - **Shadow Strategy:** none.
 - **Border:** one-pixel rules divide rows and major regions.
 - **Internal Padding:** compact table cells use roughly one-third to three-quarters of a rem; major lab regions use up to three rem.
-
-### Navigation
-
-The family index is a full-width ruled strip whose equal-width links behave like labeled machine bays. Links retain the paper ground until hover or until their family becomes active, when plotting blue fills the entire cell. The active link stays synchronized with the selected lab tab and exposes `aria-current`. Activating a family shortcut first scrolls smoothly to the labs, then changes the family after `450ms` so the destination is in view before control and panel feedback begin; reduced-motion mode activates it immediately. On small screens, the strip wraps into a two-column matrix without adding card gaps or rounded corners.
 
 ### Proof Readout
 
@@ -252,7 +248,7 @@ Starting a run changes the root state to `running` for at least `900ms`. During 
 
 Completion changes the root state to `passed`. The model traces draw over `1.25s`, the carriage settles over `700ms`, and each observation reprints from 30% scale and zero opacity over `280ms`. Point delays begin at `180ms` and advance by `16ms` per point, producing a measured left-to-right sequence. A failed state does not play the completion sequence.
 
-Under reduced motion, sweep, dashed calibration, point and row printing, panel entry and scan, code reveal, control punch, carriage calibration and settling, button spin, and copy feedback are disabled. Trace offsets and point opacity resolve immediately, the live flag changes state without transition, smooth scrolling becomes automatic, and family shortcuts activate without delay.
+Under reduced motion, sweep, dashed calibration, point and row printing, panel entry and scan, code reveal, control punch, carriage calibration and settling, button spin, and copy feedback are disabled. Trace offsets and point opacity resolve immediately, and the live flag changes state without transition.
 
 **The State-Machine Motion Rule.** Motion must explain a real state change: calibration belongs to `running`, drawing and printing belong to `passed`, family feedback belongs to a changed selection, and copy feedback belongs to clipboard state.
 

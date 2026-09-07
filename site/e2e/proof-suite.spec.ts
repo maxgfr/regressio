@@ -9,7 +9,10 @@ test("runs every exported API in a real browser", async ({ page }) => {
   await expect(page.locator(".trace--ols")).toHaveAttribute("d", /M/);
 
   for (const family of ["Regression", "Classification", "Diagnostics", "Preprocessing", "Intervals", "Matrix"]) {
-    await page.getByRole("tab", { name: family }).click();
+    const tab = page.getByRole("tab", { name: family });
+    await expect(tab).toHaveCount(1);
+    await tab.click();
+    await expect(tab).toHaveCSS("animation-name", "control-punch");
     await expect(page.locator("#all-checks tr")).not.toHaveCount(0);
     await expect(page.locator("#all-checks .status--fail")).toHaveCount(0);
   }
@@ -68,10 +71,6 @@ test("replays the proof animation and keeps family selection visible", async ({ 
   await expect(page.locator("#lab-panel")).toHaveCSS("animation-name", "lab-enter");
   await expect(page.locator("#all-checks tr").first()).toHaveCSS("animation-name", "row-print");
   await expect(page.locator(".code-proof pre")).toHaveCSS("animation-name", "code-print");
-  await expect(page.locator('.family-index [data-family="Classification"]')).toHaveAttribute(
-    "aria-current",
-    "true",
-  );
   await expect(page.locator("#checks-caption")).toHaveText("Classification API checks");
 
   const copyButton = page.locator("#copy-code");
@@ -80,19 +79,6 @@ test("replays the proof animation and keeps family selection visible", async ({ 
   await expect
     .poll(() => copyButton.evaluate((element) => getComputedStyle(element).animationName))
     .toMatch(/copy-(confirm|error)/);
-});
-
-test("animates a family shortcut after scrolling to its proof", async ({ page }) => {
-  await page.goto("./");
-  await expect(page.locator("#api-count")).toHaveText("36 / 36 APIs", { timeout: 30_000 });
-
-  await page.locator('.family-index a[data-family="Matrix"]').click();
-  await expect(page.getByRole("tab", { name: "Matrix" })).toHaveCSS(
-    "animation-name",
-    "control-punch",
-  );
-  await expect(page.locator("#checks-caption")).toHaveText("Matrix API checks");
-  await expect(page.locator("#lab-panel")).toBeInViewport();
 });
 
 test("keeps the completed plot legible with reduced motion", async ({ page }) => {
