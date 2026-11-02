@@ -22,10 +22,6 @@ coverage/
 playwright-report/
 .ultra11y/
 test-results/
-.impeccable/build/
-.impeccable/review/
-.impeccable/mocks/comp-b-*
-.impeccable/mocks/comp-c-*
 
 # IDE
 .idea
@@ -33,3 +29,4 @@ test-results/
 
 # OS
 .DS_Store
+.impeccable/
